@@ -1,0 +1,636 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Vimeo 영상 뷰어 - user104908181</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #00a8ff, #0097e6);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+
+        .header p {
+            font-size: 1.2em;
+            opacity: 0.9;
+        }
+
+        .controls {
+            padding: 30px;
+            background: #f8f9fa;
+            border-bottom: 1px solid #e9ecef;
+            text-align: center;
+        }
+
+        .btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 25px;
+            cursor: pointer;
+            font-weight: bold;
+            text-decoration: none;
+            display: inline-block;
+            text-align: center;
+            transition: all 0.3s ease;
+            font-size: 1em;
+            margin: 0 10px;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #00a8ff, #0097e6);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: linear-gradient(135deg, #0097e6, #0078d4);
+            transform: translateY(-2px);
+        }
+
+        .btn-secondary {
+            background: linear-gradient(135deg, #ff6b6b, #ffa500);
+            color: white;
+        }
+
+        .btn-secondary:hover {
+            background: linear-gradient(135deg, #ff5252, #ff9800);
+            transform: translateY(-2px);
+        }
+
+        .btn-info {
+            background: linear-gradient(135deg, #4ecdc4, #44a08d);
+            color: white;
+        }
+
+        .btn-info:hover {
+            background: linear-gradient(135deg, #45b7aa, #3d8b7a);
+            transform: translateY(-2px);
+        }
+
+        .video-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 30px;
+            padding: 40px;
+        }
+
+        .video-card {
+            background: #f8f9fa;
+            border-radius: 15px;
+            overflow: hidden;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+            transition: all 0.3s ease;
+            border: 3px solid transparent;
+            cursor: pointer;
+        }
+
+        .video-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 35px rgba(0,0,0,0.15);
+            border-color: #00a8ff;
+        }
+
+        .video-thumbnail {
+            position: relative;
+            width: 100%;
+            height: 200px;
+            overflow: hidden;
+            background: #e9ecef;
+        }
+
+        .video-thumbnail img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transition: transform 0.3s ease;
+        }
+
+        .video-card:hover .video-thumbnail img {
+            transform: scale(1.05);
+        }
+
+        .play-button {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 60px;
+            height: 60px;
+            background: rgba(0, 168, 255, 0.9);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 24px;
+            transition: all 0.3s ease;
+        }
+
+        .video-card:hover .play-button {
+            background: rgba(0, 168, 255, 1);
+            transform: translate(-50%, -50%) scale(1.1);
+        }
+
+        .video-info {
+            padding: 20px;
+        }
+
+        .video-title {
+            font-size: 1.1em;
+            font-weight: bold;
+            color: #333;
+            margin-bottom: 10px;
+            line-height: 1.4;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+
+        .video-meta {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            color: #666;
+            font-size: 0.9em;
+        }
+
+        .video-duration {
+            background: rgba(0, 168, 255, 0.1);
+            color: #00a8ff;
+            padding: 4px 8px;
+            border-radius: 12px;
+            font-weight: bold;
+        }
+
+        .video-views {
+            color: #666;
+        }
+
+        .loading {
+            display: none;
+            text-align: center;
+            padding: 60px;
+            color: #666;
+        }
+
+        .spinner {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #00a8ff;
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 20px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .error {
+            text-align: center;
+            padding: 40px;
+            color: #ff6b6b;
+            background: #ffe6e6;
+            margin: 20px;
+            border-radius: 10px;
+        }
+
+        .stats {
+            display: flex;
+            justify-content: space-around;
+            background: #f8f9fa;
+            padding: 20px;
+            border-top: 1px solid #e9ecef;
+        }
+
+        .stat-item {
+            text-align: center;
+        }
+
+        .stat-number {
+            font-size: 2em;
+            font-weight: bold;
+            color: #00a8ff;
+        }
+
+        .stat-label {
+            color: #666;
+            font-size: 0.9em;
+        }
+
+        .status {
+            margin: 20px 30px;
+            padding: 15px;
+            background: #e3f2fd;
+            border-radius: 10px;
+            color: #1976d2;
+            text-align: center;
+            font-weight: bold;
+        }
+
+        @media (max-width: 768px) {
+            .video-grid {
+                grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+                padding: 20px;
+                gap: 20px;
+            }
+            
+            .header h1 {
+                font-size: 2em;
+            }
+            
+            .controls {
+                padding: 20px;
+            }
+            
+            .btn {
+                margin: 5px;
+                padding: 10px 20px;
+            }
+        }
+
+        .search-box {
+            position: relative;
+            margin-bottom: 20px;
+        }
+
+        .search-box input {
+            width: 100%;
+            max-width: 400px;
+            padding: 15px 45px 15px 15px;
+            border: 2px solid #ddd;
+            border-radius: 25px;
+            font-size: 1.1em;
+            transition: border-color 0.3s ease;
+        }
+
+        .search-box input:focus {
+            outline: none;
+            border-color: #00a8ff;
+        }
+
+        .search-icon {
+            position: absolute;
+            right: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #666;
+            font-size: 1.2em;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🎬 Vimeo 영상 뷰어</h1>
+            <p>user104908181의 모든 영상을 썸네일로 탐색하세요!</p>
+        </div>
+
+        <div class="controls">
+            <div class="search-box">
+                <input type="text" id="searchInput" placeholder="🔍 영상 제목으로 검색...">
+                <span class="search-icon">🔍</span>
+            </div>
+            
+            <button class="btn btn-primary" onclick="loadVideos()">📺 영상 목록 새로고침</button>
+            <button class="btn btn-secondary" onclick="openAllVideos()">🚀 모든 영상 열기</button>
+            <button class="btn btn-info" onclick="showInfo()">ℹ️ 정보</button>
+        </div>
+
+        <div class="loading" id="loading">
+            <div class="spinner"></div>
+            <p>Vimeo 영상을 불러오는 중...</p>
+        </div>
+
+        <div class="error" id="error" style="display: none;">
+            <h3>⚠️ 영상을 불러올 수 없습니다</h3>
+            <p>Vimeo API 제한이나 네트워크 문제로 인해 영상을 불러올 수 없습니다.</p>
+            <p>잠시 후 다시 시도해주세요.</p>
+        </div>
+
+        <div class="video-grid" id="videoGrid">
+            <!-- 동적으로 생성될 영상 카드들 -->
+        </div>
+
+        <div class="stats" id="stats">
+            <div class="stat-item">
+                <div class="stat-number" id="totalVideos">0</div>
+                <div class="stat-label">총 영상 수</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-number" id="openedVideos">0</div>
+                <div class="stat-label">열린 영상</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-number" id="filteredVideos">0</div>
+                <div class="stat-label">검색 결과</div>
+            </div>
+        </div>
+
+        <div class="status" id="status">
+            "영상 목록 새로고침" 버튼을 클릭하여 Vimeo 영상을 불러오세요!
+        </div>
+    </div>
+
+    <script>
+        let allVideos = [];
+        let filteredVideos = [];
+        let openedCount = 0;
+        const userId = '104908181';
+
+        // 페이지 로드 시 초기화
+        document.addEventListener('DOMContentLoaded', function() {
+            // 검색 기능
+            document.getElementById('searchInput').addEventListener('input', function(e) {
+                const searchTerm = e.target.value.toLowerCase();
+                filterVideos(searchTerm);
+            });
+
+            // Enter 키로 검색
+            document.getElementById('searchInput').addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') {
+                    const searchTerm = e.target.value.toLowerCase();
+                    if (searchTerm) {
+                        filterVideos(searchTerm);
+                    }
+                }
+            });
+
+            // 초기 로드
+            loadVideos();
+        });
+
+        function showLoading() {
+            document.getElementById('loading').style.display = 'block';
+            document.getElementById('videoGrid').style.display = 'none';
+            document.getElementById('error').style.display = 'none';
+        }
+
+        function hideLoading() {
+            document.getElementById('loading').style.display = 'none';
+            document.getElementById('videoGrid').style.display = 'grid';
+        }
+
+        function showError() {
+            document.getElementById('loading').style.display = 'none';
+            document.getElementById('videoGrid').style.display = 'none';
+            document.getElementById('error').style.display = 'block';
+        }
+
+        async function loadVideos() {
+            showLoading();
+            updateStatus('Vimeo에서 영상 목록을 가져오는 중...');
+
+            try {
+                // Vimeo API를 사용하여 사용자 영상 목록 가져오기
+                const response = await fetch(`https://vimeo.com/api/v2/user/${userId}/videos.json`);
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                
+                const videos = await response.json();
+                
+                if (videos && videos.length > 0) {
+                    allVideos = videos;
+                    filteredVideos = [...videos];
+                    createVideoCards();
+                    updateStats();
+                    hideLoading();
+                    updateStatus(`${videos.length}개의 영상을 성공적으로 불러왔습니다!`);
+                } else {
+                    throw new Error('영상이 없거나 접근할 수 없습니다.');
+                }
+                
+            } catch (error) {
+                console.error('영상 로드 오류:', error);
+                showError();
+                updateStatus('영상을 불러오는 중 오류가 발생했습니다.');
+                
+                // 대안: 샘플 데이터로 데모
+                setTimeout(() => {
+                    loadSampleVideos();
+                }, 2000);
+            }
+        }
+
+        function loadSampleVideos() {
+            // 샘플 데이터 (실제 Vimeo API가 작동하지 않을 때 사용)
+            const sampleVideos = [
+                {
+                    id: 'sample1',
+                    title: '샘플 영상 1 - Vimeo API 데모',
+                    url: 'https://vimeo.com/user104908181',
+                    thumbnail_large: 'https://via.placeholder.com/400x225/00a8ff/ffffff?text=Sample+Video+1',
+                    duration: '2:30',
+                    stats_number_of_plays: 150
+                },
+                {
+                    id: 'sample2',
+                    title: '샘플 영상 2 - Vimeo API 데모',
+                    url: 'https://vimeo.com/user104908181',
+                    thumbnail_large: 'https://via.placeholder.com/400x225/0097e6/ffffff?text=Sample+Video+2',
+                    duration: '4:15',
+                    stats_number_of_plays: 89
+                },
+                {
+                    id: 'sample3',
+                    title: '샘플 영상 3 - Vimeo API 데모',
+                    url: 'https://vimeo.com/user104908181',
+                    thumbnail_large: 'https://via.placeholder.com/400x225/ff6b6b/ffffff?text=Sample+Video+3',
+                    duration: '1:45',
+                    stats_number_of_plays: 203
+                }
+            ];
+
+            allVideos = sampleVideos;
+            filteredVideos = [...sampleVideos];
+            createVideoCards();
+            updateStats();
+            hideLoading();
+            updateStatus('샘플 데이터로 데모를 표시합니다. 실제 Vimeo API 연결을 확인해주세요.');
+        }
+
+        function createVideoCards() {
+            const videoGrid = document.getElementById('videoGrid');
+            videoGrid.innerHTML = '';
+
+            filteredVideos.forEach(video => {
+                const card = document.createElement('div');
+                card.className = 'video-card';
+                card.onclick = () => openVideo(video);
+                
+                const duration = formatDuration(video.duration);
+                const views = formatViews(video.stats_number_of_plays);
+                
+                card.innerHTML = `
+                    <div class="video-thumbnail">
+                        <img src="${video.thumbnail_large}" alt="${video.title}" onerror="this.src='https://via.placeholder.com/400x225/e9ecef/666666?text=Thumbnail+Error'">
+                        <div class="play-button">▶</div>
+                    </div>
+                    <div class="video-info">
+                        <div class="video-title">${video.title}</div>
+                        <div class="video-meta">
+                            <span class="video-duration">${duration}</span>
+                            <span class="video-views">👁 ${views}</span>
+                        </div>
+                    </div>
+                `;
+                videoGrid.appendChild(card);
+            });
+        }
+
+        function openVideo(video) {
+            // Vimeo 영상 상세 페이지를 새창으로 열기
+            const videoUrl = video.url || `https://vimeo.com/${video.id}`;
+            window.open(videoUrl, '_blank');
+            openedCount++;
+            updateStats();
+            updateStatus(`"${video.title}" 영상을 새창에서 열었습니다.`);
+        }
+
+        function openAllVideos() {
+            if (filteredVideos.length === 0) {
+                alert('먼저 영상 목록을 불러와주세요.');
+                return;
+            }
+
+            if (filteredVideos.length > 20) {
+                if (!confirm(`${filteredVideos.length}개의 영상을 모두 열까요? 많은 탭이 열릴 수 있습니다.`)) {
+                    return;
+                }
+            }
+
+            filteredVideos.forEach((video, index) => {
+                setTimeout(() => {
+                    openVideo(video);
+                }, index * 200); // 0.2초 간격으로 열기
+            });
+
+            updateStatus('모든 영상을 순차적으로 열고 있습니다...');
+        }
+
+        function filterVideos(searchTerm) {
+            if (!searchTerm) {
+                filteredVideos = [...allVideos];
+            } else {
+                filteredVideos = allVideos.filter(video => 
+                    video.title.toLowerCase().includes(searchTerm)
+                );
+            }
+            
+            createVideoCards();
+            updateStats();
+            
+            if (searchTerm) {
+                updateStatus(`"${searchTerm}" 검색 결과: ${filteredVideos.length}개 영상`);
+            } else {
+                updateStatus(`${allVideos.length}개의 영상이 표시됩니다.`);
+            }
+        }
+
+        function formatDuration(seconds) {
+            if (!seconds) return '0:00';
+            const mins = Math.floor(seconds / 60);
+            const secs = seconds % 60;
+            return `${mins}:${secs.toString().padStart(2, '0')}`;
+        }
+
+        function formatViews(views) {
+            if (!views) return '0';
+            if (views >= 1000) {
+                return (views / 1000).toFixed(1) + 'K';
+            }
+            return views.toString();
+        }
+
+        function updateStats() {
+            document.getElementById('totalVideos').textContent = allVideos.length;
+            document.getElementById('openedVideos').textContent = openedCount;
+            document.getElementById('filteredVideos').textContent = filteredVideos.length;
+        }
+
+        function updateStatus(message) {
+            const status = document.getElementById('status');
+            status.textContent = message;
+            status.style.background = '#e8f5e8';
+            status.style.color = '#2e7d32';
+            
+            setTimeout(() => {
+                status.textContent = '영상을 클릭하여 Vimeo에서 시청하거나 검색 기능을 사용하세요!';
+                status.style.background = '#e3f2fd';
+                status.style.color = '#1976d2';
+            }, 3000);
+        }
+
+        function showInfo() {
+            alert(`Vimeo 영상 뷰어 v1.0
+
+📺 기능:
+- Vimeo 사용자 user104908181의 모든 영상 표시
+- 썸네일 그리드 레이아웃으로 영상 탐색
+- 영상 제목으로 실시간 검색
+- 클릭 시 Vimeo 상세 페이지 새창 열기
+- 일괄 작업 (모든 영상 열기)
+
+🔧 사용법:
+1. "영상 목록 새로고침" 버튼으로 영상 로드
+2. 썸네일 클릭하여 영상 시청
+3. 검색창에서 제목으로 필터링
+
+⚠️ 주의사항:
+- Vimeo API 제한으로 인해 일부 영상이 표시되지 않을 수 있습니다
+- 네트워크 상태에 따라 로딩 시간이 달라질 수 있습니다
+- 일부 영상은 Vimeo 계정 로그인이 필요할 수 있습니다`);
+        }
+
+        // 키보드 단축키
+        document.addEventListener('keydown', function(e) {
+            if (e.ctrlKey || e.metaKey) {
+                switch(e.key) {
+                    case 'g':
+                        e.preventDefault();
+                        document.getElementById('searchInput').focus();
+                        break;
+                    case 'r':
+                        e.preventDefault();
+                        loadVideos();
+                        break;
+                }
+            }
+        });
+    </script>
+</body>
+</html>

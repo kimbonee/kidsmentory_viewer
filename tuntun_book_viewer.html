@@ -1,0 +1,1836 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>통합 미디어 뷰어 - TunTun Books & Vimeo Videos</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #ff6b6b, #ffa500);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+
+        .header p {
+            font-size: 1.2em;
+            opacity: 0.9;
+        }
+
+        /* 탭 시스템 스타일 */
+        .tab-container {
+            background: #f8f9fa;
+            border-bottom: 1px solid #e9ecef;
+        }
+
+        .tab-buttons {
+            display: flex;
+            justify-content: center;
+            padding: 0;
+            margin: 0;
+        }
+
+        .tab-button {
+            background: transparent;
+            border: none;
+            padding: 20px 40px;
+            font-size: 1.1em;
+            font-weight: bold;
+            color: #666;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border-bottom: 3px solid transparent;
+            position: relative;
+        }
+
+        .tab-button:hover {
+            background: rgba(0, 0, 0, 0.05);
+            color: #333;
+        }
+
+        .tab-button.active {
+            color: #667eea;
+            border-bottom-color: #667eea;
+            background: white;
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        .controls {
+            padding: 30px;
+            background: #f8f9fa;
+            border-bottom: 1px solid #e9ecef;
+        }
+
+        .control-group {
+            display: flex;
+            gap: 20px;
+            align-items: center;
+            flex-wrap: wrap;
+            margin-bottom: 20px;
+        }
+
+        .control-item {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+        }
+
+        .control-item label {
+            font-weight: bold;
+            color: #333;
+            font-size: 0.9em;
+        }
+
+        .control-item input, .control-item select {
+            padding: 10px;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            font-size: 1em;
+            transition: border-color 0.3s ease;
+        }
+
+        .control-item input:focus, .control-item select:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 25px;
+            cursor: pointer;
+            font-weight: bold;
+            text-decoration: none;
+            display: inline-block;
+            text-align: center;
+            transition: all 0.3s ease;
+            font-size: 1em;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: linear-gradient(135deg, #5a6fd8, #6a4190);
+            transform: translateY(-2px);
+        }
+
+        .btn-secondary {
+            background: linear-gradient(135deg, #ff6b6b, #ffa500);
+            color: white;
+        }
+
+        .btn-secondary:hover {
+            background: linear-gradient(135deg, #ff5252, #ff9800);
+            transform: translateY(-2px);
+        }
+
+        .btn-success {
+            background: linear-gradient(135deg, #4ecdc4, #44a08d);
+            color: white;
+        }
+
+        .btn-success:hover {
+            background: linear-gradient(135deg, #45b7aa, #3d8b7a);
+            transform: translateY(-2px);
+        }
+
+        .btn-info {
+            background: linear-gradient(135deg, #a8e6cf, #7fcdcd);
+            color: #333;
+        }
+
+        .btn-info:hover {
+            background: linear-gradient(135deg, #96d4c4, #6bb6b6);
+            transform: translateY(-2px);
+        }
+
+        .book-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 20px;
+            padding: 30px;
+            max-height: 600px;
+            overflow-y: auto;
+        }
+
+        .book-card {
+            background: #f8f9fa;
+            border-radius: 12px;
+            padding: 20px;
+            text-align: center;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            transition: all 0.3s ease;
+            border: 2px solid transparent;
+            cursor: pointer;
+        }
+
+        .book-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 25px rgba(0,0,0,0.15);
+            border-color: #667eea;
+        }
+
+        .book-number {
+            font-size: 1.2em;
+            font-weight: bold;
+            color: #333;
+            margin-bottom: 10px;
+        }
+
+        .book-actions {
+            display: flex;
+            gap: 8px;
+            flex-direction: column;
+        }
+
+        .book-actions .btn {
+            padding: 8px 12px;
+            font-size: 0.9em;
+            min-width: auto;
+        }
+
+        .status {
+            margin: 20px 30px;
+            padding: 15px;
+            background: #e3f2fd;
+            border-radius: 10px;
+            color: #1976d2;
+            text-align: center;
+            font-weight: bold;
+        }
+
+        .loading {
+            display: none;
+            text-align: center;
+            padding: 40px;
+            color: #666;
+        }
+
+        .spinner {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #667eea;
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 20px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .stats {
+            display: flex;
+            justify-content: space-around;
+            background: #f8f9fa;
+            padding: 20px;
+            border-top: 1px solid #e9ecef;
+        }
+
+        .stat-item {
+            text-align: center;
+        }
+
+        .stat-number {
+            font-size: 2em;
+            font-weight: bold;
+            color: #667eea;
+        }
+
+        .stat-label {
+            color: #666;
+            font-size: 0.9em;
+        }
+
+        @media (max-width: 768px) {
+            .book-grid {
+                grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+                padding: 20px;
+            }
+            
+            .header h1 {
+                font-size: 2em;
+            }
+            
+            .control-group {
+                flex-direction: column;
+                align-items: stretch;
+            }
+            
+            .stats {
+                flex-direction: column;
+                gap: 15px;
+            }
+        }
+
+        .search-box {
+            position: relative;
+            margin-bottom: 20px;
+        }
+
+        .search-box input {
+            width: 100%;
+            padding: 15px 45px 15px 15px;
+            border: 2px solid #ddd;
+            border-radius: 25px;
+            font-size: 1.1em;
+            transition: border-color 0.3s ease;
+        }
+
+        .search-box input:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .search-icon {
+            position: absolute;
+            right: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #666;
+            font-size: 1.2em;
+        }
+
+        /* Vimeo 관련 스타일 */
+        .video-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 30px;
+            padding: 40px;
+            max-height: none;
+            overflow: visible;
+        }
+
+        .video-card {
+            background: #f8f9fa;
+            border-radius: 15px;
+            overflow: hidden;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+            transition: all 0.3s ease;
+            border: 3px solid transparent;
+            cursor: pointer;
+        }
+
+        .video-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 35px rgba(0,0,0,0.15);
+            border-color: #00a8ff;
+        }
+
+        .video-thumbnail {
+            position: relative;
+            width: 100%;
+            height: 200px;
+            overflow: hidden;
+            background: #e9ecef;
+        }
+
+        .video-thumbnail img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transition: transform 0.3s ease;
+        }
+
+        .video-card:hover .video-thumbnail img {
+            transform: scale(1.05);
+        }
+
+        .play-button {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 60px;
+            height: 60px;
+            background: rgba(0, 168, 255, 0.9);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 24px;
+            transition: all 0.3s ease;
+        }
+
+        .video-card:hover .play-button {
+            background: rgba(0, 168, 255, 1);
+            transform: translate(-50%, -50%) scale(1.1);
+        }
+
+        .video-info {
+            padding: 20px;
+        }
+
+        .video-title {
+            font-size: 1.1em;
+            font-weight: bold;
+            color: #333;
+            margin-bottom: 10px;
+            line-height: 1.4;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+
+        .video-meta {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            color: #666;
+            font-size: 0.9em;
+        }
+
+        .video-duration {
+            background: rgba(0, 168, 255, 0.1);
+            color: #00a8ff;
+            padding: 4px 8px;
+            border-radius: 12px;
+            font-weight: bold;
+        }
+
+        .video-views {
+            color: #666;
+        }
+
+        .vimeo-loading {
+            display: none;
+            text-align: center;
+            padding: 60px;
+            color: #666;
+        }
+
+        .vimeo-spinner {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #00a8ff;
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 20px;
+        }
+
+        .vimeo-error {
+            text-align: center;
+            padding: 40px;
+            color: #ff6b6b;
+            background: #ffe6e6;
+            margin: 20px;
+            border-radius: 10px;
+        }
+
+        .pagination {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+            gap: 10px;
+        }
+
+        .pagination button {
+            padding: 10px 15px;
+            border: 1px solid #ddd;
+            background: white;
+            color: #333;
+            cursor: pointer;
+            border-radius: 5px;
+            transition: all 0.3s ease;
+        }
+
+        .pagination button:hover {
+            background: #f8f9fa;
+            border-color: #667eea;
+        }
+
+        .pagination button.active {
+            background: #667eea;
+            color: white;
+            border-color: #667eea;
+        }
+
+        .pagination button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🎬 통합 미디어 뷰어</h1>
+            <p>TunTun Books & Vimeo Videos를 한 곳에서 탐색하세요!</p>
+        </div>
+
+        <div class="tab-container">
+            <div class="tab-buttons">
+                <button class="tab-button active" onclick="switchTab('books')">📚 TunTun Books</button>
+                <button class="tab-button" onclick="switchTab('videos')">🎬 Vimeo Videos</button>
+                <button class="tab-button" onclick="switchTab('kidsm')">🎯 키즈엠</button>
+            </div>
+        </div>
+
+        <!-- TunTun Books 탭 -->
+        <div class="tab-content active" id="books-tab">
+            <div class="controls">
+                <div class="search-box">
+                    <input type="text" id="searchInput" placeholder="🔍 책 번호로 검색 (예: Book0101, Book1234)">
+                    <span class="search-icon">🔍</span>
+                </div>
+
+                <div class="control-group">
+                    <div class="control-item">
+                        <label>시작 번호</label>
+                        <input type="number" id="startNumber" value="101" min="1" max="9999">
+                    </div>
+                    <div class="control-item">
+                        <label>끝 번호</label>
+                        <input type="number" id="endNumber" value="110" min="1" max="110">
+                    </div>
+                    <div class="control-item">
+                        <label>페이지당 표시</label>
+                        <select id="pageSize">
+                            <option value="50">50개</option>
+                            <option value="100" selected>100개</option>
+                            <option value="200">200개</option>
+                            <option value="500">500개</option>
+                        </select>
+                    </div>
+                    <div class="control-item">
+                        <button class="btn btn-primary" onclick="generateBooks()">📚 책 목록 생성</button>
+                    </div>
+                </div>
+
+                <div class="control-group">
+                    <button class="btn btn-secondary" onclick="openAllBooks()">🚀 모든 책 열기</button>
+                    <button class="btn btn-success" onclick="copyAllUrls()">📋 모든 URL 복사</button>
+                    <button class="btn btn-info" onclick="showInfo()">ℹ️ 정보</button>
+                    <button class="btn btn-secondary" onclick="refreshPage()">🔄 새로고침</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Vimeo Videos 탭 -->
+        <div class="tab-content" id="videos-tab">
+            <div class="vimeo-link" style="text-align: center; margin-bottom: 20px; padding: 15px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.1);">
+                <a href="https://vimeo.com/user104908181" target="_blank" style="color: white; text-decoration: none; font-weight: bold; font-size: 18px; text-shadow: 0 2px 4px rgba(0,0,0,0.3);">
+                    📺 Vimeo 채널: https://vimeo.com/user104908181
+                </a>
+            </div>
+            <div class="controls">
+                <div class="search-box">
+                    <input type="text" id="videoSearchInput" placeholder="🔍 영상 제목으로 검색...">
+                    <span class="search-icon">🔍</span>
+                </div>
+
+                <div class="control-group">
+                    <button class="btn btn-primary" onclick="loadVideos()">📺 영상 목록 새로고침</button>
+                    <button class="btn btn-secondary" onclick="openAllVideos()">🚀 모든 영상 열기</button>
+                    <button class="btn btn-info" onclick="showVideoInfo()">ℹ️ 정보</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- 키즈엠 탭 -->
+        <div class="tab-content" id="kidsm-tab">
+            <div class="controls">
+                <div class="search-box">
+                    <input type="text" id="kidsmSearchInput" placeholder="🔍 컨텐츠 ID로 검색 (예: 1, 25, 100)">
+                    <span class="search-icon">🔍</span>
+                </div>
+
+                <div class="control-group">
+                    <div class="control-item">
+                        <label>시작 ID</label>
+                        <input type="number" id="kidsmStartId" value="1" min="1" max="9999">
+                    </div>
+                    <div class="control-item">
+                        <label>끝 ID</label>
+                        <input type="number" id="kidsmEndId" value="39" min="1" max="9999">
+                    </div>
+                    <div class="control-item">
+                        <button class="btn btn-primary" onclick="loadKidsmContent()">🎯 키즈엠 컨텐츠 로드</button>
+                    </div>
+                </div>
+
+                <div class="control-group">
+                    <button class="btn btn-secondary" onclick="openAllKidsmContent()">🚀 모든 컨텐츠 열기</button>
+                    <button class="btn btn-success" onclick="copyAllKidsmUrls()">📋 모든 URL 복사</button>
+                    <button class="btn btn-info" onclick="showKidsmInfo()">ℹ️ 정보</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Books 탭 콘텐츠 -->
+        <div class="tab-content active" id="books-content">
+            <div class="loading" id="loading">
+                <div class="spinner"></div>
+                <p>책 목록을 생성하는 중...</p>
+            </div>
+
+            <div class="book-grid" id="bookGrid">
+                <!-- 동적으로 생성될 책 카드들 -->
+            </div>
+
+            <div class="stats" id="stats">
+                <div class="stat-item">
+                    <div class="stat-number" id="totalBooks">0</div>
+                    <div class="stat-label">총 책 수</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-number" id="currentRange">0-0</div>
+                    <div class="stat-label">현재 범위</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-number" id="openedBooks">0</div>
+                    <div class="stat-label">열린 책</div>
+                </div>
+            </div>
+
+            <div class="status" id="status">
+                Book0101부터 Book0110까지의 범위에서 시작 번호와 끝 번호를 설정하고 "책 목록 생성" 버튼을 클릭하세요!
+            </div>
+        </div>
+
+        <!-- Videos 탭 콘텐츠 -->
+        <div class="tab-content" id="videos-content">
+            <div class="vimeo-loading" id="vimeoLoading">
+                <div class="vimeo-spinner"></div>
+                <p>Vimeo 영상을 불러오는 중...</p>
+            </div>
+
+            <div class="vimeo-error" id="vimeoError" style="display: none;">
+                <h3>⚠️ 영상을 불러올 수 없습니다</h3>
+                <p>Vimeo API 제한이나 네트워크 문제로 인해 영상을 불러올 수 없습니다.</p>
+                <p>잠시 후 다시 시도해주세요.</p>
+            </div>
+
+            <div class="video-grid" id="videoGrid">
+                <!-- 동적으로 생성될 영상 카드들 -->
+            </div>
+
+            <div class="pagination" id="pagination" style="display: none;">
+                <button onclick="previousPage()">이전</button>
+                <span id="pageInfo">페이지 1 / 1</span>
+                <button onclick="nextPage()">다음</button>
+            </div>
+
+            <div class="stats" id="videoStats">
+                <div class="stat-item">
+                    <div class="stat-number" id="totalVideos">0</div>
+                    <div class="stat-label">총 영상 수</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-number" id="openedVideos">0</div>
+                    <div class="stat-label">열린 영상</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-number" id="filteredVideos">0</div>
+                    <div class="stat-label">검색 결과</div>
+                </div>
+            </div>
+
+            <div class="status" id="videoStatus">
+                "영상 목록 새로고침" 버튼을 클릭하여 Vimeo 영상을 불러오세요!
+            </div>
+        </div>
+
+        <!-- 키즈엠 탭 콘텐츠 -->
+        <div class="tab-content" id="kidsm-content">
+            <div class="loading" id="kidsmLoading">
+                <div class="spinner"></div>
+                <p>키즈엠 컨텐츠를 불러오는 중...</p>
+            </div>
+
+            <div class="book-grid" id="kidsmGrid">
+                <!-- 동적으로 생성될 키즈엠 컨텐츠 카드들 -->
+            </div>
+
+            <div class="pagination" id="kidsmPagination" style="display: none;">
+                <button onclick="previousKidsmPage()">이전</button>
+                <span id="kidsmPageInfo">페이지 1 / 1</span>
+                <button onclick="nextKidsmPage()">다음</button>
+            </div>
+
+            <div class="stats" id="kidsmStats">
+                <div class="stat-item">
+                    <div class="stat-number" id="totalKidsmContent">0</div>
+                    <div class="stat-label">총 컨텐츠 수</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-number" id="currentKidsmRange">0-0</div>
+                    <div class="stat-label">현재 범위</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-number" id="openedKidsmContent">0</div>
+                    <div class="stat-label">열린 컨텐츠</div>
+                </div>
+            </div>
+
+            <div class="status" id="kidsmStatus">
+                시작 ID와 끝 ID를 설정하고 "키즈엠 컨텐츠 로드" 버튼을 클릭하세요!
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Books 관련 변수
+        let currentBooks = [];
+        let openedCount = 0;
+
+        // Videos 관련 변수
+        let allVideos = [];
+        let filteredVideos = [];
+        let openedVideoCount = 0;
+        let currentPage = 1;
+        let videosPerPage = 12;
+        let totalPages = 1;
+        const userId = '104908181';
+
+        // 키즈엠 관련 변수
+        let allKidsmContent = [];
+        let filteredKidsmContent = [];
+        let openedKidsmCount = 0;
+        let currentKidsmPage = 1;
+        let kidsmPerPage = 20;
+        let totalKidsmPages = 1;
+
+        // 탭 전환 함수
+        function switchTab(tabName) {
+            // 모든 탭 버튼 비활성화
+            document.querySelectorAll('.tab-button').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            
+            // 모든 탭 콘텐츠 숨기기
+            document.querySelectorAll('.tab-content').forEach(content => {
+                content.classList.remove('active');
+            });
+            
+            // 선택된 탭 활성화
+            if (tabName === 'books') {
+                document.querySelector('.tab-button[onclick="switchTab(\'books\')"]').classList.add('active');
+                document.getElementById('books-tab').classList.add('active');
+                document.getElementById('books-content').classList.add('active');
+            } else if (tabName === 'videos') {
+                document.querySelector('.tab-button[onclick="switchTab(\'videos\')"]').classList.add('active');
+                document.getElementById('videos-tab').classList.add('active');
+                document.getElementById('videos-content').classList.add('active');
+                
+                // Vimeo 탭으로 전환 시 자동으로 영상 로드
+                if (allVideos.length === 0) {
+                    loadVideos();
+                }
+            } else if (tabName === 'kidsm') {
+                document.querySelector('.tab-button[onclick="switchTab(\'kidsm\')"]').classList.add('active');
+                document.getElementById('kidsm-tab').classList.add('active');
+                document.getElementById('kidsm-content').classList.add('active');
+                
+                // 키즈엠 탭으로 전환 시 자동으로 컨텐츠 로드 (ID 1-39)
+                if (allKidsmContent.length === 0) {
+                    loadKidsmContent();
+                }
+            }
+        }
+
+        // 페이지 로드 시 기본 설정
+        document.addEventListener('DOMContentLoaded', function() {
+            // Books 검색 기능
+            document.getElementById('searchInput').addEventListener('input', function(e) {
+                const searchTerm = e.target.value.toLowerCase();
+                filterBooks(searchTerm);
+            });
+
+            // Books Enter 키로 검색
+            document.getElementById('searchInput').addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') {
+                    const searchTerm = e.target.value.toLowerCase();
+                    if (searchTerm.includes('book')) {
+                        const number = searchTerm.replace('book', '').trim();
+                        if (number && !isNaN(number)) {
+                            openSpecificBook(number);
+                        }
+                    }
+                }
+            });
+
+            // Videos 검색 기능
+            document.getElementById('videoSearchInput').addEventListener('input', function(e) {
+                const searchTerm = e.target.value.toLowerCase();
+                filterVideos(searchTerm);
+            });
+
+            // Videos Enter 키로 검색
+            document.getElementById('videoSearchInput').addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') {
+                    const searchTerm = e.target.value.toLowerCase();
+                    if (searchTerm) {
+                        filterVideos(searchTerm);
+                    }
+                }
+            });
+
+            // 키즈엠 검색 기능
+            document.getElementById('kidsmSearchInput').addEventListener('input', function(e) {
+                const searchTerm = e.target.value.toLowerCase();
+                filterKidsmContent(searchTerm);
+            });
+
+            // 키즈엠 Enter 키로 검색
+            document.getElementById('kidsmSearchInput').addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') {
+                    const searchTerm = e.target.value.toLowerCase();
+                    if (searchTerm && !isNaN(searchTerm)) {
+                        openKidsmContentById(parseInt(searchTerm));
+                    }
+                }
+            });
+
+            // 기본 책 목록 생성
+            generateBooks();
+        });
+
+        function showLoading() {
+            document.getElementById('loading').style.display = 'block';
+            document.getElementById('bookGrid').style.display = 'none';
+        }
+
+        function hideLoading() {
+            document.getElementById('loading').style.display = 'none';
+            document.getElementById('bookGrid').style.display = 'grid';
+        }
+
+        function generateBooks() {
+            const startNum = parseInt(document.getElementById('startNumber').value);
+            const endNum = parseInt(document.getElementById('endNumber').value);
+            const pageSize = parseInt(document.getElementById('pageSize').value);
+
+            if (startNum > endNum) {
+                alert('시작 번호는 끝 번호보다 작아야 합니다.');
+                return;
+            }
+
+            if (endNum > 110) {
+                alert('Book0111부터는 컨텐츠가 없습니다. 끝 번호는 110 이하로 설정해주세요.');
+                return;
+            }
+
+            if (endNum - startNum + 1 > 1000) {
+                if (!confirm(`${endNum - startNum + 1}개의 책을 생성하시겠습니까? 많은 수의 책으로 인해 브라우저가 느려질 수 있습니다.`)) {
+                    return;
+                }
+            }
+
+            showLoading();
+            
+            setTimeout(() => {
+                currentBooks = [];
+                for (let i = startNum; i <= endNum; i++) {
+                    const bookNumber = i.toString().padStart(4, '0');
+                    currentBooks.push({
+                        number: bookNumber,
+                        url: `https://media.tuntun.com/fs_qr/EB/Book${bookNumber}`
+                    });
+                }
+
+                createBookCards();
+                updateStats();
+                hideLoading();
+                updateStatus(`${startNum}번부터 ${endNum}번까지 총 ${currentBooks.length}개의 책을 생성했습니다.`);
+            }, 500);
+        }
+
+        function createBookCards() {
+            const bookGrid = document.getElementById('bookGrid');
+            bookGrid.innerHTML = '';
+
+            currentBooks.forEach(book => {
+                const card = document.createElement('div');
+                card.className = 'book-card';
+                card.innerHTML = `
+                    <div class="book-number">Book${book.number}</div>
+                    <div class="book-actions">
+                        <button class="btn btn-primary" onclick="openBook('${book.number}')">
+                            📖 열기
+                        </button>
+                        <button class="btn btn-secondary" onclick="openBookInNewTab('${book.number}')">
+                            🔗 새 탭
+                        </button>
+                        <button class="btn btn-info" onclick="copyBookUrl('${book.number}')">
+                            📋 복사
+                        </button>
+                    </div>
+                `;
+                bookGrid.appendChild(card);
+            });
+        }
+
+        function openBook(bookNumber) {
+            const url = `https://media.tuntun.com/fs_qr/EB/Book${bookNumber}`;
+            window.open(url, '_blank');
+            openedCount++;
+            updateStats();
+            updateStatus(`Book${bookNumber}을 새 탭에서 열었습니다.`);
+        }
+
+        function openBookInNewTab(bookNumber) {
+            const url = `https://media.tuntun.com/fs_qr/EB/Book${bookNumber}`;
+            window.open(url, '_blank');
+            openedCount++;
+            updateStats();
+            updateStatus(`Book${bookNumber}을 새 탭에서 열었습니다.`);
+        }
+
+        function copyBookUrl(bookNumber) {
+            const url = `https://media.tuntun.com/fs_qr/EB/Book${bookNumber}`;
+            
+            if (navigator.clipboard) {
+                navigator.clipboard.writeText(url).then(() => {
+                    updateStatus(`Book${bookNumber} URL이 클립보드에 복사되었습니다!`);
+                });
+            } else {
+                const textArea = document.createElement('textarea');
+                textArea.value = url;
+                document.body.appendChild(textArea);
+                textArea.select();
+                document.execCommand('copy');
+                document.body.removeChild(textArea);
+                updateStatus(`Book${bookNumber} URL이 클립보드에 복사되었습니다!`);
+            }
+        }
+
+        function openAllBooks() {
+            if (currentBooks.length === 0) {
+                alert('먼저 책 목록을 생성해주세요.');
+                return;
+            }
+
+            if (currentBooks.length > 50) {
+                if (!confirm(`${currentBooks.length}개의 책을 모두 열까요? 많은 탭이 열릴 수 있습니다.`)) {
+                    return;
+                }
+            }
+
+            currentBooks.forEach((book, index) => {
+                setTimeout(() => {
+                    openBook(book.number);
+                }, index * 100); // 0.1초 간격으로 열기
+            });
+
+            updateStatus('모든 책을 순차적으로 열고 있습니다...');
+        }
+
+        function copyAllUrls() {
+            if (currentBooks.length === 0) {
+                alert('먼저 책 목록을 생성해주세요.');
+                return;
+            }
+
+            const urls = currentBooks.map(book => book.url).join('\n');
+            
+            if (navigator.clipboard) {
+                navigator.clipboard.writeText(urls).then(() => {
+                    updateStatus('모든 URL이 클립보드에 복사되었습니다!');
+                });
+            } else {
+                const textArea = document.createElement('textarea');
+                textArea.value = urls;
+                document.body.appendChild(textArea);
+                textArea.select();
+                document.execCommand('copy');
+                document.body.removeChild(textArea);
+                updateStatus('모든 URL이 클립보드에 복사되었습니다!');
+            }
+        }
+
+        function filterBooks(searchTerm) {
+            const cards = document.querySelectorAll('.book-card');
+            cards.forEach(card => {
+                const bookNumber = card.querySelector('.book-number').textContent.toLowerCase();
+                if (bookNumber.includes(searchTerm)) {
+                    card.style.display = 'block';
+                } else {
+                    card.style.display = 'none';
+                }
+            });
+        }
+
+        function openSpecificBook(bookNumber) {
+            const paddedNumber = bookNumber.padStart(4, '0');
+            openBook(paddedNumber);
+        }
+
+        function updateStats() {
+            document.getElementById('totalBooks').textContent = currentBooks.length;
+            if (currentBooks.length > 0) {
+                const startNum = currentBooks[0].number;
+                const endNum = currentBooks[currentBooks.length - 1].number;
+                document.getElementById('currentRange').textContent = `${startNum}-${endNum}`;
+            }
+            document.getElementById('openedBooks').textContent = openedCount;
+        }
+
+        function updateStatus(message) {
+            const status = document.getElementById('status');
+            status.textContent = message;
+            status.style.background = '#e8f5e8';
+            status.style.color = '#2e7d32';
+            
+            setTimeout(() => {
+                status.textContent = 'Book0101부터 Book0110까지의 책을 클릭하여 열거나 검색 기능을 사용하세요!';
+                status.style.background = '#e3f2fd';
+                status.style.color = '#1976d2';
+            }, 3000);
+        }
+
+        function showInfo() {
+            alert(`TunTun Book Viewer v1.1
+
+📚 기능:
+- Book0101부터 Book0110까지 모든 책 표시
+- 개별 책 열기, 새 탭 열기, URL 복사
+- 검색 기능 (책 번호로 검색)
+- 일괄 작업 (모든 책 열기, URL 복사)
+
+🔧 사용법:
+1. 시작 번호와 끝 번호 설정 (101-110 범위)
+2. "책 목록 생성" 버튼 클릭
+3. 원하는 책의 버튼 클릭
+
+⌨️ 단축키:
+- Enter: 검색창에서 책 번호 입력 후 Enter로 바로 열기
+
+⚠️ 주의사항:
+- Book0111부터는 컨텐츠가 없습니다
+- 끝 번호는 110 이하로 설정해주세요
+- 일부 책은 접근 권한이 필요할 수 있습니다`);
+        }
+
+        function refreshPage() {
+            location.reload();
+        }
+
+        // ===== Vimeo 관련 함수들 =====
+        
+        function showVimeoLoading() {
+            document.getElementById('vimeoLoading').style.display = 'block';
+            document.getElementById('videoGrid').style.display = 'none';
+            document.getElementById('vimeoError').style.display = 'none';
+        }
+
+        function hideVimeoLoading() {
+            document.getElementById('vimeoLoading').style.display = 'none';
+            document.getElementById('videoGrid').style.display = 'grid';
+        }
+
+        function showVimeoError() {
+            document.getElementById('vimeoLoading').style.display = 'none';
+            document.getElementById('videoGrid').style.display = 'none';
+            document.getElementById('vimeoError').style.display = 'block';
+        }
+
+        async function loadVideos() {
+            showVimeoLoading();
+            updateVideoStatus('Vimeo에서 영상 목록을 가져오는 중...');
+
+            try {
+                let allVideosData = [];
+                let page = 1; // 1페이지부터 시작
+                let hasMorePages = true;
+                let maxPages = 10; // 최대 10페이지까지만 시도 (API 제한 고려)
+                let consecutiveErrors = 0;
+
+                // 1페이지부터 최대 10페이지까지 영상을 가져오기
+                while (hasMorePages && page <= maxPages) {
+                    updateVideoStatus(`Vimeo에서 영상 목록을 가져오는 중... (페이지 ${page}/${maxPages})`);
+                    
+                    try {
+                        const response = await fetch(`https://vimeo.com/api/v2/user/${userId}/videos.json?page=${page}&per_page=50`);
+                        
+                        if (!response.ok) {
+                            console.log(`페이지 ${page} 오류: HTTP ${response.status}`);
+                            consecutiveErrors++;
+                            
+                            // 연속으로 3번 실패하면 중단
+                            if (consecutiveErrors >= 3) {
+                                console.log('연속 오류로 인해 로딩 중단');
+                                break;
+                            }
+                            
+                            page++;
+                            continue;
+                        }
+                        
+                        const videos = await response.json();
+                        
+                        if (videos && videos.length > 0) {
+                            allVideosData = allVideosData.concat(videos);
+                            consecutiveErrors = 0; // 성공 시 오류 카운터 리셋
+                            page++;
+                            
+                            // Vimeo API는 보통 50개씩 반환하므로, 50개 미만이면 마지막 페이지
+                            if (videos.length < 50) {
+                                hasMorePages = false;
+                            }
+                        } else {
+                            hasMorePages = false;
+                        }
+                        
+                    } catch (pageError) {
+                        console.log(`페이지 ${page} 요청 오류:`, pageError);
+                        consecutiveErrors++;
+                        
+                        if (consecutiveErrors >= 3) {
+                            console.log('연속 오류로 인해 로딩 중단');
+                            break;
+                        }
+                        
+                        page++;
+                    }
+                    
+                    // API 호출 간격 조절 (레이트 리미트 고려하여 더 긴 간격)
+                    await new Promise(resolve => setTimeout(resolve, 500));
+                }
+                
+                if (allVideosData.length > 0) {
+                    allVideos = allVideosData;
+                    filteredVideos = [...allVideosData];
+                    totalPages = Math.ceil(filteredVideos.length / videosPerPage);
+                    currentPage = 1;
+                    createVideoCards();
+                    updateVideoStats();
+                    hideVimeoLoading();
+                    updateVideoStatus(`${allVideosData.length}개의 영상을 성공적으로 불러왔습니다! (1페이지부터 ${page-1}페이지까지)`);
+                } else {
+                    throw new Error('영상이 없거나 접근할 수 없습니다.');
+                }
+                
+            } catch (error) {
+                console.error('영상 로드 오류:', error);
+                showVimeoError();
+                updateVideoStatus('영상을 불러오는 중 오류가 발생했습니다. Vimeo API 제한으로 인해 일부 페이지만 로드될 수 있습니다.');
+                
+                // 대안: 샘플 데이터로 데모
+                setTimeout(() => {
+                    loadSampleVideos();
+                }, 2000);
+            }
+        }
+
+        function loadSampleVideos() {
+            // 샘플 데이터 (실제 Vimeo API가 작동하지 않을 때 사용)
+            const sampleVideos = [
+                {
+                    id: 'sample1',
+                    title: '샘플 영상 1 - Vimeo API 데모',
+                    url: 'https://vimeo.com/user104908181',
+                    thumbnail_large: 'https://via.placeholder.com/400x225/00a8ff/ffffff?text=Sample+Video+1',
+                    duration: 150,
+                    stats_number_of_plays: 150
+                },
+                {
+                    id: 'sample2',
+                    title: '샘플 영상 2 - Vimeo API 데모',
+                    url: 'https://vimeo.com/user104908181',
+                    thumbnail_large: 'https://via.placeholder.com/400x225/0097e6/ffffff?text=Sample+Video+2',
+                    duration: 255,
+                    stats_number_of_plays: 89
+                },
+                {
+                    id: 'sample3',
+                    title: '샘플 영상 3 - Vimeo API 데모',
+                    url: 'https://vimeo.com/user104908181',
+                    thumbnail_large: 'https://via.placeholder.com/400x225/ff6b6b/ffffff?text=Sample+Video+3',
+                    duration: 105,
+                    stats_number_of_plays: 203
+                },
+                {
+                    id: 'sample4',
+                    title: '샘플 영상 4 - Vimeo API 데모',
+                    url: 'https://vimeo.com/user104908181',
+                    thumbnail_large: 'https://via.placeholder.com/400x225/4ecdc4/ffffff?text=Sample+Video+4',
+                    duration: 180,
+                    stats_number_of_plays: 67
+                },
+                {
+                    id: 'sample5',
+                    title: '샘플 영상 5 - Vimeo API 데모',
+                    url: 'https://vimeo.com/user104908181',
+                    thumbnail_large: 'https://via.placeholder.com/400x225/ffa500/ffffff?text=Sample+Video+5',
+                    duration: 320,
+                    stats_number_of_plays: 134
+                },
+                {
+                    id: 'sample6',
+                    title: '샘플 영상 6 - Vimeo API 데모',
+                    url: 'https://vimeo.com/user104908181',
+                    thumbnail_large: 'https://via.placeholder.com/400x225/9b59b6/ffffff?text=Sample+Video+6',
+                    duration: 95,
+                    stats_number_of_plays: 89
+                }
+            ];
+
+            allVideos = sampleVideos;
+            filteredVideos = [...sampleVideos];
+            totalPages = Math.ceil(filteredVideos.length / videosPerPage);
+            currentPage = 1;
+            createVideoCards();
+            updateVideoStats();
+            hideVimeoLoading();
+            updateVideoStatus('샘플 데이터로 데모를 표시합니다. 실제 Vimeo API 연결을 확인해주세요.');
+        }
+
+        function createVideoCards() {
+            const videoGrid = document.getElementById('videoGrid');
+            videoGrid.innerHTML = '';
+
+            const startIndex = (currentPage - 1) * videosPerPage;
+            const endIndex = startIndex + videosPerPage;
+            const videosToShow = filteredVideos.slice(startIndex, endIndex);
+
+            videosToShow.forEach(video => {
+                const card = document.createElement('div');
+                card.className = 'video-card';
+                card.onclick = () => openVideo(video);
+                
+                const duration = formatDuration(video.duration);
+                const views = formatViews(video.stats_number_of_plays);
+                
+                card.innerHTML = `
+                    <div class="video-thumbnail">
+                        <img src="${video.thumbnail_large}" alt="${video.title}" onerror="this.src='https://via.placeholder.com/400x225/e9ecef/666666?text=Thumbnail+Error'">
+                        <div class="play-button">▶</div>
+                    </div>
+                    <div class="video-info">
+                        <div class="video-title">${video.title}</div>
+                        <div class="video-meta">
+                            <span class="video-duration">${duration}</span>
+                            <span class="video-views">👁 ${views}</span>
+                        </div>
+                    </div>
+                `;
+                videoGrid.appendChild(card);
+            });
+
+            // 페이지네이션 업데이트
+            updatePagination();
+        }
+
+        function openVideo(video) {
+            // Vimeo 영상 상세 페이지를 새창으로 열기
+            const videoUrl = video.url || `https://vimeo.com/${video.id}`;
+            window.open(videoUrl, '_blank');
+            openedVideoCount++;
+            updateVideoStats();
+            updateVideoStatus(`"${video.title}" 영상을 새창에서 열었습니다.`);
+        }
+
+        function openAllVideos() {
+            if (filteredVideos.length === 0) {
+                alert('먼저 영상 목록을 불러와주세요.');
+                return;
+            }
+
+            if (filteredVideos.length > 20) {
+                if (!confirm(`${filteredVideos.length}개의 영상을 모두 열까요? 많은 탭이 열릴 수 있습니다.`)) {
+                    return;
+                }
+            }
+
+            filteredVideos.forEach((video, index) => {
+                setTimeout(() => {
+                    openVideo(video);
+                }, index * 200); // 0.2초 간격으로 열기
+            });
+
+            updateVideoStatus('모든 영상을 순차적으로 열고 있습니다...');
+        }
+
+        function filterVideos(searchTerm) {
+            if (!searchTerm) {
+                filteredVideos = [...allVideos];
+            } else {
+                filteredVideos = allVideos.filter(video => 
+                    video.title.toLowerCase().includes(searchTerm)
+                );
+            }
+            
+            totalPages = Math.ceil(filteredVideos.length / videosPerPage);
+            currentPage = 1;
+            createVideoCards();
+            updateVideoStats();
+            
+            if (searchTerm) {
+                updateVideoStatus(`"${searchTerm}" 검색 결과: ${filteredVideos.length}개 영상`);
+            } else {
+                updateVideoStatus(`${allVideos.length}개의 영상이 표시됩니다.`);
+            }
+        }
+
+        function formatDuration(seconds) {
+            if (!seconds) return '0:00';
+            const mins = Math.floor(seconds / 60);
+            const secs = seconds % 60;
+            return `${mins}:${secs.toString().padStart(2, '0')}`;
+        }
+
+        function formatViews(views) {
+            if (!views) return '0';
+            if (views >= 1000) {
+                return (views / 1000).toFixed(1) + 'K';
+            }
+            return views.toString();
+        }
+
+        function updatePagination() {
+            const pagination = document.getElementById('pagination');
+            const pageInfo = document.getElementById('pageInfo');
+            
+            if (totalPages > 1) {
+                pagination.style.display = 'flex';
+                pageInfo.textContent = `페이지 ${currentPage} / ${totalPages}`;
+            } else {
+                pagination.style.display = 'none';
+            }
+        }
+
+        function previousPage() {
+            if (currentPage > 1) {
+                currentPage--;
+                createVideoCards();
+            }
+        }
+
+        function nextPage() {
+            if (currentPage < totalPages) {
+                currentPage++;
+                createVideoCards();
+            }
+        }
+
+        function updateVideoStats() {
+            document.getElementById('totalVideos').textContent = allVideos.length;
+            document.getElementById('openedVideos').textContent = openedVideoCount;
+            document.getElementById('filteredVideos').textContent = filteredVideos.length;
+        }
+
+        function updateVideoStatus(message) {
+            const status = document.getElementById('videoStatus');
+            status.textContent = message;
+            status.style.background = '#e8f5e8';
+            status.style.color = '#2e7d32';
+            
+            setTimeout(() => {
+                status.textContent = '영상을 클릭하여 Vimeo에서 시청하거나 검색 기능을 사용하세요!';
+                status.style.background = '#e3f2fd';
+                status.style.color = '#1976d2';
+            }, 3000);
+        }
+
+        function showVideoInfo() {
+            alert(`Vimeo 영상 뷰어 v1.0
+
+📺 기능:
+- Vimeo 사용자 user104908181의 영상 표시
+- 썸네일 그리드 레이아웃으로 영상 탐색
+- 영상 제목으로 실시간 검색
+- 클릭 시 Vimeo 상세 페이지 새창 열기
+- 페이지네이션으로 모든 영상 탐색
+- 일괄 작업 (모든 영상 열기)
+
+🔧 사용법:
+1. "영상 목록 새로고침" 버튼으로 영상 로드
+2. 썸네일 클릭하여 영상 시청
+3. 검색창에서 제목으로 필터링
+4. 페이지네이션으로 더 많은 영상 탐색
+
+📝 현재 설정:
+- 1페이지부터 최대 10페이지까지 로드
+- 페이지당 50개 영상
+- 연속 오류 3회 시 자동 중단
+- API 호출 간격 500ms (레이트 리미트 고려)
+
+⚠️ 주의사항:
+- Vimeo API 제한으로 인해 2페이지 이상이 제한될 수 있습니다
+- 무료 계정은 15분당 250개 요청 제한이 있습니다
+- 네트워크 상태에 따라 로딩 시간이 달라질 수 있습니다
+- 일부 영상은 Vimeo 계정 로그인이 필요할 수 있습니다`);
+        }
+
+        // ===== 키즈엠 관련 함수들 =====
+        
+        function showKidsmLoading() {
+            document.getElementById('kidsmLoading').style.display = 'block';
+            document.getElementById('kidsmGrid').style.display = 'none';
+        }
+
+        function hideKidsmLoading() {
+            document.getElementById('kidsmLoading').style.display = 'none';
+            document.getElementById('kidsmGrid').style.display = 'grid';
+        }
+
+        async function loadKidsmContent() {
+            const startId = parseInt(document.getElementById('kidsmStartId').value);
+            const endId = parseInt(document.getElementById('kidsmEndId').value);
+
+            if (startId > endId) {
+                alert('시작 ID는 끝 ID보다 작아야 합니다.');
+                return;
+            }
+
+            if (endId - startId + 1 > 100) {
+                if (!confirm(`${endId - startId + 1}개의 컨텐츠를 로드하시겠습니까? 많은 수의 컨텐츠로 인해 시간이 오래 걸릴 수 있습니다.`)) {
+                    return;
+                }
+            }
+
+            showKidsmLoading();
+            updateKidsmStatus(`키즈엠 컨텐츠를 불러오는 중... (ID: ${startId}-${endId})`);
+
+            try {
+                allKidsmContent = [];
+                let successCount = 0;
+                let failCount = 0;
+
+                // 각 ID에 대해 컨텐츠 존재 여부 확인
+                for (let id = startId; id <= endId; id++) {
+                    try {
+                        const url = `https://play.kidsmentory.com/switchon/detail_media_choice?type=HD&id=${id}&num=&age=4&week=0&level=A`;
+                        
+                        // GET 요청으로 실제 컨텐츠 확인 (HEAD 요청이 차단될 수 있음)
+                        const response = await fetch(url, { 
+                            method: 'GET',
+                            mode: 'no-cors', // CORS 문제 해결
+                            headers: {
+                                'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
+                                'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36'
+                            }
+                        });
+                        
+                        // no-cors 모드에서는 response.ok를 확인할 수 없으므로 다른 방법 사용
+                        if (response.type === 'opaque' || response.status === 0) {
+                            // no-cors 응답이면 컨텐츠가 존재한다고 가정
+                            allKidsmContent.push({
+                                id: id,
+                                title: `키즈엠 컨텐츠 ${id}`,
+                                url: url,
+                                description: `ID ${id} 컨텐츠`
+                            });
+                            successCount++;
+                        } else if (response.ok) {
+                            allKidsmContent.push({
+                                id: id,
+                                title: `키즈엠 컨텐츠 ${id}`,
+                                url: url,
+                                description: `ID ${id} 컨텐츠`
+                            });
+                            successCount++;
+                        } else {
+                            failCount++;
+                        }
+                    } catch (error) {
+                        console.log(`ID ${id} 오류:`, error);
+                        failCount++;
+                    }
+
+                    // 진행 상황 업데이트
+                    if (id % 5 === 0 || id === endId) {
+                        updateKidsmStatus(`키즈엠 컨텐츠를 불러오는 중... (${id}/${endId}) - 성공: ${successCount}, 실패: ${failCount}`);
+                    }
+
+                    // API 호출 간격 조절 (더 짧게)
+                    await new Promise(resolve => setTimeout(resolve, 100));
+                }
+
+                if (allKidsmContent.length > 0) {
+                    filteredKidsmContent = [...allKidsmContent];
+                    totalKidsmPages = Math.ceil(filteredKidsmContent.length / kidsmPerPage);
+                    currentKidsmPage = 1;
+                    createKidsmCards();
+                    updateKidsmStats();
+                    hideKidsmLoading();
+                    updateKidsmStatus(`${allKidsmContent.length}개의 컨텐츠를 성공적으로 불러왔습니다! (성공: ${successCount}, 실패: ${failCount})`);
+                } else {
+                    // 실제 API가 작동하지 않으면 샘플 데이터로 대체
+                    console.log('실제 API 호출 실패, 샘플 데이터로 대체');
+                    loadSampleKidsmContent(startId, endId);
+                }
+
+            } catch (error) {
+                console.error('키즈엠 컨텐츠 로드 오류:', error);
+                hideKidsmLoading();
+                updateKidsmStatus('컨텐츠를 불러오는 중 오류가 발생했습니다. 샘플 데이터로 대체합니다.');
+                
+                // 대안: 샘플 데이터로 데모
+                setTimeout(() => {
+                    loadSampleKidsmContent(startId, endId);
+                }, 1000);
+            }
+        }
+
+        function loadSampleKidsmContent(startId, endId) {
+            // 샘플 데이터 (실제 API가 작동하지 않을 때 사용)
+            const sampleContent = [];
+            const contentTitles = [
+                '기초 한글 배우기',
+                '숫자 세기 놀이',
+                '색깔 인식하기',
+                '동물 소리 배우기',
+                '도형 인식하기',
+                '음악과 리듬',
+                '그림 그리기',
+                '스토리텔링',
+                '영어 기초',
+                '과학 실험',
+                '요리 만들기',
+                '운동과 체조',
+                '사회성 발달',
+                '창의력 키우기',
+                '집중력 향상',
+                '언어 발달',
+                '수학 기초',
+                '자연 관찰',
+                '예술 감상',
+                '건강한 습관'
+            ];
+
+            const contentDescriptions = [
+                '한글의 기본을 재미있게 배워요',
+                '1부터 10까지 숫자를 세어봐요',
+                '다양한 색깔을 구분해봐요',
+                '동물들의 소리를 들어봐요',
+                '원, 삼각형, 사각형을 찾아봐요',
+                '음악에 맞춰 춤춰봐요',
+                '크레파스로 그림을 그려봐요',
+                '재미있는 이야기를 들어봐요',
+                '기본 영어 단어를 배워봐요',
+                '간단한 실험을 해봐요',
+                '맛있는 요리를 만들어봐요',
+                '몸을 움직여 건강해져요',
+                '친구들과 함께 놀아봐요',
+                '상상력을 키워봐요',
+                '집중해서 문제를 풀어봐요',
+                '말하기 실력을 키워봐요',
+                '기본 수학을 배워봐요',
+                '자연의 신비를 관찰해봐요',
+                '아름다운 예술을 감상해봐요',
+                '좋은 습관을 만들어봐요'
+            ];
+
+            const maxContent = Math.min(startId + 38, endId); // 최대 39개
+            for (let id = startId; id <= maxContent; id++) {
+                const titleIndex = (id - 1) % contentTitles.length;
+                const descIndex = (id - 1) % contentDescriptions.length;
+                
+                sampleContent.push({
+                    id: id,
+                    title: `${contentTitles[titleIndex]} ${id}`,
+                    url: `https://play.kidsmentory.com/switchon/detail_media_choice?type=HD&id=${id}&num=&age=4&week=0&level=A`,
+                    description: contentDescriptions[descIndex]
+                });
+            }
+
+            allKidsmContent = sampleContent;
+            filteredKidsmContent = [...sampleContent];
+            totalKidsmPages = Math.ceil(filteredKidsmContent.length / kidsmPerPage);
+            currentKidsmPage = 1;
+            createKidsmCards();
+            updateKidsmStats();
+            hideKidsmLoading();
+            updateKidsmStatus(`샘플 데이터로 데모를 표시합니다. (${sampleContent.length}개 컨텐츠) 실제 키즈엠 API 연결을 확인해주세요.`);
+        }
+
+        function createKidsmCards() {
+            const kidsmGrid = document.getElementById('kidsmGrid');
+            kidsmGrid.innerHTML = '';
+
+            const startIndex = (currentKidsmPage - 1) * kidsmPerPage;
+            const endIndex = startIndex + kidsmPerPage;
+            const contentToShow = filteredKidsmContent.slice(startIndex, endIndex);
+
+            contentToShow.forEach(content => {
+                const card = document.createElement('div');
+                card.className = 'book-card';
+                card.innerHTML = `
+                    <div class="video-title">${content.title}</div>
+                    <div class="video-info">
+                        <p><strong>설명:</strong> ${content.description}</p>
+                        <p><strong>ID:</strong> ${content.id}</p>
+                    </div>
+                    <div class="video-actions">
+                        <button class="btn btn-primary" onclick="openKidsmContent('${content.id}')">
+                            🎯 컨텐츠 열기
+                        </button>
+                        <button class="btn btn-secondary" onclick="openKidsmContentInNewTab('${content.id}')">
+                            🔗 새 탭
+                        </button>
+                        <button class="btn btn-info" onclick="copyKidsmUrl('${content.id}')">
+                            📋 URL 복사
+                        </button>
+                    </div>
+                `;
+                kidsmGrid.appendChild(card);
+            });
+
+            // 페이지네이션 업데이트
+            updateKidsmPagination();
+        }
+
+        function openKidsmContent(contentId) {
+            const content = allKidsmContent.find(c => c.id == contentId);
+            if (content) {
+                window.open(content.url, '_blank');
+                openedKidsmCount++;
+                updateKidsmStats();
+                updateKidsmStatus(`ID ${contentId} 컨텐츠를 새창에서 열었습니다.`);
+            }
+        }
+
+        function openKidsmContentInNewTab(contentId) {
+            openKidsmContent(contentId);
+        }
+
+        function copyKidsmUrl(contentId) {
+            const content = allKidsmContent.find(c => c.id == contentId);
+            if (content) {
+                if (navigator.clipboard) {
+                    navigator.clipboard.writeText(content.url).then(() => {
+                        updateKidsmStatus(`ID ${contentId} URL이 클립보드에 복사되었습니다!`);
+                    });
+                } else {
+                    const textArea = document.createElement('textarea');
+                    textArea.value = content.url;
+                    document.body.appendChild(textArea);
+                    textArea.select();
+                    document.execCommand('copy');
+                    document.body.removeChild(textArea);
+                    updateKidsmStatus(`ID ${contentId} URL이 클립보드에 복사되었습니다!`);
+                }
+            }
+        }
+
+        function openKidsmContentById(id) {
+            const content = allKidsmContent.find(c => c.id === id);
+            if (content) {
+                openKidsmContent(id);
+            } else {
+                alert(`ID ${id} 컨텐츠를 찾을 수 없습니다.`);
+            }
+        }
+
+        function openAllKidsmContent() {
+            if (filteredKidsmContent.length === 0) {
+                alert('먼저 컨텐츠 목록을 불러와주세요.');
+                return;
+            }
+
+            if (filteredKidsmContent.length > 50) {
+                if (!confirm(`${filteredKidsmContent.length}개의 컨텐츠를 모두 열까요? 많은 탭이 열릴 수 있습니다.`)) {
+                    return;
+                }
+            }
+
+            filteredKidsmContent.forEach((content, index) => {
+                setTimeout(() => {
+                    openKidsmContent(content.id);
+                }, index * 300); // 0.3초 간격으로 열기
+            });
+
+            updateKidsmStatus('모든 컨텐츠를 순차적으로 열고 있습니다...');
+        }
+
+        function copyAllKidsmUrls() {
+            if (filteredKidsmContent.length === 0) {
+                alert('먼저 컨텐츠 목록을 불러와주세요.');
+                return;
+            }
+
+            const urls = filteredKidsmContent.map(content => content.url).join('\n');
+            
+            if (navigator.clipboard) {
+                navigator.clipboard.writeText(urls).then(() => {
+                    updateKidsmStatus('모든 URL이 클립보드에 복사되었습니다!');
+                });
+            } else {
+                const textArea = document.createElement('textarea');
+                textArea.value = urls;
+                document.body.appendChild(textArea);
+                textArea.select();
+                document.execCommand('copy');
+                document.body.removeChild(textArea);
+                updateKidsmStatus('모든 URL이 클립보드에 복사되었습니다!');
+            }
+        }
+
+        function filterKidsmContent(searchTerm) {
+            if (!searchTerm) {
+                filteredKidsmContent = [...allKidsmContent];
+            } else {
+                filteredKidsmContent = allKidsmContent.filter(content => 
+                    content.id.toString().includes(searchTerm) ||
+                    content.title.toLowerCase().includes(searchTerm)
+                );
+            }
+            
+            totalKidsmPages = Math.ceil(filteredKidsmContent.length / kidsmPerPage);
+            currentKidsmPage = 1;
+            createKidsmCards();
+            updateKidsmStats();
+            
+            if (searchTerm) {
+                updateKidsmStatus(`"${searchTerm}" 검색 결과: ${filteredKidsmContent.length}개 컨텐츠`);
+            } else {
+                updateKidsmStatus(`${allKidsmContent.length}개의 컨텐츠가 표시됩니다.`);
+            }
+        }
+
+        function updateKidsmPagination() {
+            const pagination = document.getElementById('kidsmPagination');
+            const pageInfo = document.getElementById('kidsmPageInfo');
+            
+            if (totalKidsmPages > 1) {
+                pagination.style.display = 'flex';
+                pageInfo.textContent = `페이지 ${currentKidsmPage} / ${totalKidsmPages}`;
+            } else {
+                pagination.style.display = 'none';
+            }
+        }
+
+        function previousKidsmPage() {
+            if (currentKidsmPage > 1) {
+                currentKidsmPage--;
+                createKidsmCards();
+            }
+        }
+
+        function nextKidsmPage() {
+            if (currentKidsmPage < totalKidsmPages) {
+                currentKidsmPage++;
+                createKidsmCards();
+            }
+        }
+
+        function updateKidsmStats() {
+            document.getElementById('totalKidsmContent').textContent = allKidsmContent.length;
+            if (allKidsmContent.length > 0) {
+                const startId = allKidsmContent[0].id;
+                const endId = allKidsmContent[allKidsmContent.length - 1].id;
+                document.getElementById('currentKidsmRange').textContent = `${startId}-${endId}`;
+            }
+            document.getElementById('openedKidsmContent').textContent = openedKidsmCount;
+        }
+
+        function updateKidsmStatus(message) {
+            const status = document.getElementById('kidsmStatus');
+            status.textContent = message;
+            status.style.background = '#e8f5e8';
+            status.style.color = '#2e7d32';
+            
+            setTimeout(() => {
+                status.textContent = '컨텐츠를 클릭하여 키즈엠에서 시청하거나 검색 기능을 사용하세요!';
+                status.style.background = '#e3f2fd';
+                status.style.color = '#1976d2';
+            }, 3000);
+        }
+
+        function showKidsmInfo() {
+            alert(`키즈엠 컨텐츠 뷰어 v1.0
+
+🎯 기능:
+- 키즈멘토리 컨텐츠 ID 1부터 마지막까지 탐색
+- ID 범위 설정으로 원하는 컨텐츠만 로드
+- ID로 실시간 검색
+- 클릭 시 키즈멘토리 상세 페이지 새창 열기
+- 페이지네이션으로 모든 컨텐츠 탐색
+- 일괄 작업 (모든 컨텐츠 열기, URL 복사)
+
+🔧 사용법:
+1. 시작 ID와 끝 ID 설정 (기본: 1-39)
+2. "키즈엠 컨텐츠 로드" 버튼으로 컨텐츠 로드
+3. 컨텐츠 카드 클릭하여 시청
+4. 검색창에서 ID로 필터링
+
+📝 현재 상태:
+- 실제 키즈멘토리 API 호출 시도 중
+- API 연결 실패 시 샘플 데이터로 데모 표시
+- 샘플 데이터는 실제 키즈멘토리 컨텐츠와 유사한 형태
+
+⚠️ 주의사항:
+- CORS 정책으로 인해 실제 API 호출이 제한될 수 있습니다
+- 많은 ID 범위는 로딩 시간이 오래 걸릴 수 있습니다
+- 일부 ID는 컨텐츠가 없을 수 있습니다
+- 키즈멘토리 계정 로그인이 필요할 수 있습니다`);
+        }
+
+        // 키보드 단축키
+        document.addEventListener('keydown', function(e) {
+            if (e.ctrlKey || e.metaKey) {
+                switch(e.key) {
+                    case 'g':
+                        e.preventDefault();
+                        const activeTab = document.querySelector('.tab-button.active');
+                        if (activeTab && activeTab.textContent.includes('Books')) {
+                            document.getElementById('searchInput').focus();
+                        } else if (activeTab && activeTab.textContent.includes('Videos')) {
+                            document.getElementById('videoSearchInput').focus();
+                        } else if (activeTab && activeTab.textContent.includes('키즈엠')) {
+                            document.getElementById('kidsmSearchInput').focus();
+                        }
+                        break;
+                    case 'r':
+                        e.preventDefault();
+                        const activeTab2 = document.querySelector('.tab-button.active');
+                        if (activeTab2 && activeTab2.textContent.includes('Books')) {
+                            generateBooks();
+                        } else if (activeTab2 && activeTab2.textContent.includes('Videos')) {
+                            loadVideos();
+                        } else if (activeTab2 && activeTab2.textContent.includes('키즈엠')) {
+                            loadKidsmContent();
+                        }
+                        break;
+                }
+            }
+        });
+    </script>
+</body>
+</html>
