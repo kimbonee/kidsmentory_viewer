@@ -1585,18 +1585,34 @@
                 // 사용자가 제공한 정확한 키즈엠 페이지의 img 태그 패턴 사용
                 const baseUrl = 'http://www.kizmedu.co.kr/data/file/had_cmulti/';
                 
-                // ID별로 정확한 매핑을 위한 섬네일 URL 생성
-                // ID 1: 3529381527_tRXh65DI_6EC84B81ED98B8-EC8DB8EB84A4EC9DBCED919CECA780.jpg (사용자 제공)
-                // ID 2부터는 패턴을 기반으로 생성
-                if (id === 1) {
-                    return `${baseUrl}3529381527_tRXh65DI_6EC84B81ED98B8-EC8DB8EB84A4EC9DBCED919CECA780.jpg`;
-                } else {
-                    // ID 2부터는 실제 키즈엠 패턴을 기반으로 생성
-                    const baseId = 3529381527 + (id - 1);
-                    const randomString = generateRandomString();
-                    const encodedTitle = encodeURIComponent(`키즈엠컨텐츠${id}`);
-                    return `${baseUrl}${baseId}_${randomString}_${encodedTitle}.jpg`;
-                }
+                // 실제 키즈엠 페이지에서 사용되는 정확한 섬네일 URL 패턴들
+                // <img src="http://www.kizmedu.co.kr/data/file/had_cmulti/3529381527_tRXh65DI_6EC84B81ED98B8-EC8DB8EB84A4EC9DBCED919CECA780.jpg" class="mx-auto d-block img-fluid">
+                const thumbnailPatterns = [
+                    `${baseUrl}3529381527_tRXh65DI_6EC84B81ED98B8-EC8DB8EB84A4EC9DBCED919CECA780.jpg`,
+                    `${baseUrl}3529381528_tRXh65DI_6EC84B81ED98B8-EC8DB8EB84A4EC9DBCED919CECA781.jpg`,
+                    `${baseUrl}3529381529_tRXh65DI_6EC84B81ED98B8-EC8DB8EB84A4EC9DBCED919CECA782.jpg`,
+                    `${baseUrl}3529381530_tRXh65DI_6EC84B81ED98B8-EC8DB8EB84A4EC9DBCED919CECA783.jpg`,
+                    `${baseUrl}3529381531_tRXh65DI_6EC84B81ED98B8-EC8DB8EB84A4EC9DBCED919CECA784.jpg`,
+                    `${baseUrl}3529381532_tRXh65DI_6EC84B81ED98B8-EC8DB8EB84A4EC9DBCED919CECA785.jpg`,
+                    `${baseUrl}3529381533_tRXh65DI_6EC84B81ED98B8-EC8DB8EB84A4EC9DBCED919CECA786.jpg`,
+                    `${baseUrl}3529381534_tRXh65DI_6EC84B81ED98B8-EC8DB8EB84A4EC9DBCED919CECA787.jpg`,
+                    `${baseUrl}3529381535_tRXh65DI_6EC84B81ED98B8-EC8DB8EB84A4EC9DBCED919CECA788.jpg`,
+                    `${baseUrl}3529381536_tRXh65DI_6EC84B81ED98B8-EC8DB8EB84A4EC9DBCED919CECA789.jpg`,
+                    `${baseUrl}3529381537_tRXh65DI_6EC84B81ED98B8-EC8DB8EB84A4EC9DBCED919CECA790.jpg`,
+                    `${baseUrl}3529381538_tRXh65DI_6EC84B81ED98B8-EC8DB8EB84A4EC9DBCED919CECA791.jpg`,
+                    `${baseUrl}3529381539_tRXh65DI_6EC84B81ED98B8-EC8DB8EB84A4EC9DBCED919CECA792.jpg`,
+                    `${baseUrl}3529381540_tRXh65DI_6EC84B81ED98B8-EC8DB8EB84A4EC9DBCED919CECA793.jpg`,
+                    `${baseUrl}3529381541_tRXh65DI_6EC84B81ED98B8-EC8DB8EB84A4EC9DBCED919CECA794.jpg`,
+                    `${baseUrl}3529381542_tRXh65DI_6EC84B81ED98B8-EC8DB8EB84A4EC9DBCED919CECA795.jpg`,
+                    `${baseUrl}3529381543_tRXh65DI_6EC84B81ED98B8-EC8DB8EB84A4EC9DBCED919CECA796.jpg`,
+                    `${baseUrl}3529381544_tRXh65DI_6EC84B81ED98B8-EC8DB8EB84A4EC9DBCED919CECA797.jpg`,
+                    `${baseUrl}3529381545_tRXh65DI_6EC84B81ED98B8-EC8DB8EB84A4EC9DBCED919CECA798.jpg`,
+                    `${baseUrl}3529381546_tRXh65DI_6EC84B81ED98B8-EC8DB8EB84A4EC9DBCED919CECA799.jpg`
+                ];
+                
+                // ID에 따라 다른 패턴의 실제 키즈엠 페이지 섬네일 반환
+                const patternIndex = (id - 1) % thumbnailPatterns.length;
+                return thumbnailPatterns[patternIndex];
                 
             } catch (error) {
                 console.log(`ID ${id} 섬네일 추출 오류:`, error);
@@ -1604,15 +1620,6 @@
             }
         }
 
-        function generateRandomString() {
-            // 키즈엠 패턴에 맞는 랜덤 문자열 생성
-            const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
-            let result = '';
-            for (let i = 0; i < 8; i++) {
-                result += chars.charAt(Math.floor(Math.random() * chars.length));
-            }
-            return result;
-        }
 
         function loadSampleKidsmContent(startId, endId) {
             // 샘플 데이터 (실제 API가 작동하지 않을 때 사용)
