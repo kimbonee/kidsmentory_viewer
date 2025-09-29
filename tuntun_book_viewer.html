@@ -539,27 +539,6 @@
             transform: scale(1.05);
         }
 
-        .kidsm-play-button {
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            width: 60px;
-            height: 60px;
-            background: rgba(255, 107, 107, 0.9);
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: white;
-            font-size: 24px;
-            transition: all 0.3s ease;
-        }
-
-        .kidsm-card:hover .kidsm-play-button {
-            background: rgba(255, 107, 107, 1);
-            transform: translate(-50%, -50%) scale(1.1);
-        }
 
         .kidsm-info {
             padding: 20px;
@@ -1728,7 +1707,6 @@
                 card.innerHTML = `
                     <div class="kidsm-thumbnail">
                         <img src="${content.thumbnail}" alt="${content.title}" onerror="this.src='https://via.placeholder.com/400x225/ff6b6b/ffffff?text=키즈엠+컨텐츠+${content.id}&font-size=18'">
-                        <div class="kidsm-play-button">▶</div>
                     </div>
                     <div class="kidsm-info">
                         <div class="kidsm-title">${content.title}</div>
