@@ -1667,28 +1667,23 @@
         }
 
         function generateKidsmThumbnailUrl(id) {
-            // 사용자가 제공한 실제 키즈엠 섬네일 URL 패턴을 기반으로 생성
-            // http://www.kizmedu.co.kr/data/file/had_cmulti/3529381527_VuwZQK1q_5EC84B81ED98B8-EC8DB8EB84A4EC9DBCED919CECA780.jpg
-            const baseUrl = 'http://www.kizmedu.co.kr/data/file/had_cmulti/';
-            
-            // ID에 따라 다른 패턴의 섬네일 URL 생성
-            const patterns = [
-                // 실제 키즈엠 컨텐츠 섬네일 패턴들
-                `${baseUrl}${Math.floor(Math.random() * 1000000000)}_${Math.random().toString(36).substring(2, 15)}_${encodeURIComponent('키즈엠교육영상')}.jpg`,
-                `${baseUrl}${Math.floor(Math.random() * 1000000000)}_${Math.random().toString(36).substring(2, 15)}_${encodeURIComponent('학습놀이활동')}.jpg`,
-                `${baseUrl}${Math.floor(Math.random() * 1000000000)}_${Math.random().toString(36).substring(2, 15)}_${encodeURIComponent('창의력개발')}.jpg`,
-                `${baseUrl}${Math.floor(Math.random() * 1000000000)}_${Math.random().toString(36).substring(2, 15)}_${encodeURIComponent('음악교육')}.jpg`,
-                `${baseUrl}${Math.floor(Math.random() * 1000000000)}_${Math.random().toString(36).substring(2, 15)}_${encodeURIComponent('과학실험')}.jpg`,
-                `${baseUrl}${Math.floor(Math.random() * 1000000000)}_${Math.random().toString(36).substring(2, 15)}_${encodeURIComponent('언어학습')}.jpg`,
-                `${baseUrl}${Math.floor(Math.random() * 1000000000)}_${Math.random().toString(36).substring(2, 15)}_${encodeURIComponent('수학놀이')}.jpg`,
-                `${baseUrl}${Math.floor(Math.random() * 1000000000)}_${Math.random().toString(36).substring(2, 15)}_${encodeURIComponent('예술활동')}.jpg`,
-                `${baseUrl}${Math.floor(Math.random() * 1000000000)}_${Math.random().toString(36).substring(2, 15)}_${encodeURIComponent('사회성발달')}.jpg`,
-                `${baseUrl}${Math.floor(Math.random() * 1000000000)}_${Math.random().toString(36).substring(2, 15)}_${encodeURIComponent('체육활동')}.jpg`
+            // 안정적으로 작동하는 placeholder 이미지들 사용
+            const thumbnailUrls = [
+                'https://picsum.photos/400/225?random=1',
+                'https://picsum.photos/400/225?random=2', 
+                'https://picsum.photos/400/225?random=3',
+                'https://picsum.photos/400/225?random=4',
+                'https://picsum.photos/400/225?random=5',
+                'https://picsum.photos/400/225?random=6',
+                'https://picsum.photos/400/225?random=7',
+                'https://picsum.photos/400/225?random=8',
+                'https://picsum.photos/400/225?random=9',
+                'https://picsum.photos/400/225?random=10'
             ];
             
-            // ID에 따라 다른 패턴의 섬네일 반환
-            const patternIndex = (id - 1) % patterns.length;
-            return patterns[patternIndex];
+            // ID에 따라 다른 이미지 반환
+            const imageIndex = (id - 1) % thumbnailUrls.length;
+            return thumbnailUrls[imageIndex];
         }
 
         function createKidsmCards() {
@@ -1706,7 +1701,7 @@
                 
                 card.innerHTML = `
                     <div class="kidsm-thumbnail">
-                        <img src="${content.thumbnail}" alt="${content.title}" onerror="this.src='https://via.placeholder.com/400x225/ff6b6b/ffffff?text=키즈엠+컨텐츠+${content.id}&font-size=18'">
+                        <img src="${content.thumbnail}" alt="${content.title}" onerror="this.src='https://picsum.photos/400/225?random=${content.id}'">
                     </div>
                     <div class="kidsm-info">
                         <div class="kidsm-title">${content.title}</div>
