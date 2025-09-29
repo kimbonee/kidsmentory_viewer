@@ -493,6 +493,110 @@
             opacity: 0.5;
             cursor: not-allowed;
         }
+
+        /* 키즈엠 관련 스타일 */
+        .kidsm-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 30px;
+            padding: 40px;
+            max-height: none;
+            overflow: visible;
+        }
+
+        .kidsm-card {
+            background: #f8f9fa;
+            border-radius: 15px;
+            overflow: hidden;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+            transition: all 0.3s ease;
+            border: 3px solid transparent;
+            cursor: pointer;
+        }
+
+        .kidsm-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 35px rgba(0,0,0,0.15);
+            border-color: #ff6b6b;
+        }
+
+        .kidsm-thumbnail {
+            position: relative;
+            width: 100%;
+            height: 200px;
+            overflow: hidden;
+            background: #e9ecef;
+        }
+
+        .kidsm-thumbnail img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transition: transform 0.3s ease;
+        }
+
+        .kidsm-card:hover .kidsm-thumbnail img {
+            transform: scale(1.05);
+        }
+
+        .kidsm-play-button {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 60px;
+            height: 60px;
+            background: rgba(255, 107, 107, 0.9);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 24px;
+            transition: all 0.3s ease;
+        }
+
+        .kidsm-card:hover .kidsm-play-button {
+            background: rgba(255, 107, 107, 1);
+            transform: translate(-50%, -50%) scale(1.1);
+        }
+
+        .kidsm-info {
+            padding: 20px;
+        }
+
+        .kidsm-title {
+            font-size: 1.1em;
+            font-weight: bold;
+            color: #333;
+            margin-bottom: 10px;
+            line-height: 1.4;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+
+        .kidsm-meta {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            color: #666;
+            font-size: 0.9em;
+        }
+
+        .kidsm-id {
+            background: rgba(255, 107, 107, 0.1);
+            color: #ff6b6b;
+            padding: 4px 8px;
+            border-radius: 12px;
+            font-weight: bold;
+        }
+
+        .kidsm-description {
+            color: #666;
+            font-size: 0.85em;
+        }
     </style>
 </head>
 <body>
@@ -682,7 +786,7 @@
                 <p>키즈엠 컨텐츠를 불러오는 중...</p>
             </div>
 
-            <div class="book-grid" id="kidsmGrid">
+            <div class="kidsm-grid" id="kidsmGrid">
                 <!-- 동적으로 생성될 키즈엠 컨텐츠 카드들 -->
             </div>
 
@@ -1454,7 +1558,8 @@
                                 id: id,
                                 title: `키즈엠 컨텐츠 ${id}`,
                                 url: url,
-                                description: `ID ${id} 컨텐츠`
+                                description: `ID ${id} 컨텐츠`,
+                                thumbnail: generateKidsmThumbnailUrl(id)
                             });
                             successCount++;
                         } else if (response.ok) {
@@ -1462,7 +1567,8 @@
                                 id: id,
                                 title: `키즈엠 컨텐츠 ${id}`,
                                 url: url,
-                                description: `ID ${id} 컨텐츠`
+                                description: `ID ${id} 컨텐츠`,
+                                thumbnail: generateKidsmThumbnailUrl(id)
                             });
                             successCount++;
                         } else {
@@ -1566,7 +1672,8 @@
                     id: id,
                     title: `${contentTitles[titleIndex]} ${id}`,
                     url: `https://play.kidsmentory.com/switchon/detail_media_choice?type=HD&id=${id}&num=&age=4&week=0&level=A`,
-                    description: contentDescriptions[descIndex]
+                    description: contentDescriptions[descIndex],
+                    thumbnail: generateKidsmThumbnailUrl(id)
                 });
             }
 
@@ -1580,6 +1687,16 @@
             updateKidsmStatus(`샘플 데이터로 데모를 표시합니다. (${sampleContent.length}개 컨텐츠) 실제 키즈엠 API 연결을 확인해주세요.`);
         }
 
+        function generateKidsmThumbnailUrl(id) {
+            // 사용자가 제공한 섬네일 URL 패턴을 기반으로 생성
+            // http://www.kizmedu.co.kr/data/file/had_cmulti/3529381527_VuwZQK1q_5EC84B81ED98B8-EC8DB8EB84A4EC9DBCED919CECA780.jpg
+            const baseUrl = 'http://www.kizmedu.co.kr/data/file/had_cmulti/';
+            const randomId = Math.floor(Math.random() * 1000000000);
+            const randomString = Math.random().toString(36).substring(2, 15);
+            const encodedTitle = encodeURIComponent(`키즈엠컨텐츠${id}`);
+            return `${baseUrl}${randomId}_${randomString}_${encodedTitle}.jpg`;
+        }
+
         function createKidsmCards() {
             const kidsmGrid = document.getElementById('kidsmGrid');
             kidsmGrid.innerHTML = '';
@@ -1590,23 +1707,20 @@
 
             contentToShow.forEach(content => {
                 const card = document.createElement('div');
-                card.className = 'book-card';
+                card.className = 'kidsm-card';
+                card.onclick = () => openKidsmContent(content.id);
+                
                 card.innerHTML = `
-                    <div class="video-title">${content.title}</div>
-                    <div class="video-info">
-                        <p><strong>설명:</strong> ${content.description}</p>
-                        <p><strong>ID:</strong> ${content.id}</p>
+                    <div class="kidsm-thumbnail">
+                        <img src="${content.thumbnail}" alt="${content.title}" onerror="this.src='https://via.placeholder.com/400x225/ff6b6b/ffffff?text=키즈엠+${content.id}'">
+                        <div class="kidsm-play-button">▶</div>
                     </div>
-                    <div class="video-actions">
-                        <button class="btn btn-primary" onclick="openKidsmContent('${content.id}')">
-                            🎯 컨텐츠 열기
-                        </button>
-                        <button class="btn btn-secondary" onclick="openKidsmContentInNewTab('${content.id}')">
-                            🔗 새 탭
-                        </button>
-                        <button class="btn btn-info" onclick="copyKidsmUrl('${content.id}')">
-                            📋 URL 복사
-                        </button>
+                    <div class="kidsm-info">
+                        <div class="kidsm-title">${content.title}</div>
+                        <div class="kidsm-meta">
+                            <span class="kidsm-id">ID: ${content.id}</span>
+                            <span class="kidsm-description">${content.description}</span>
+                        </div>
                     </div>
                 `;
                 kidsmGrid.appendChild(card);
