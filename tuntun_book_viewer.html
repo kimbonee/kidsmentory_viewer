@@ -1688,13 +1688,23 @@
         }
 
         function generateKidsmThumbnailUrl(id) {
-            // 사용자가 제공한 섬네일 URL 패턴을 기반으로 생성
-            // http://www.kizmedu.co.kr/data/file/had_cmulti/3529381527_VuwZQK1q_5EC84B81ED98B8-EC8DB8EB84A4EC9DBCED919CECA780.jpg
-            const baseUrl = 'http://www.kizmedu.co.kr/data/file/had_cmulti/';
-            const randomId = Math.floor(Math.random() * 1000000000);
-            const randomString = Math.random().toString(36).substring(2, 15);
-            const encodedTitle = encodeURIComponent(`키즈엠컨텐츠${id}`);
-            return `${baseUrl}${randomId}_${randomString}_${encodedTitle}.jpg`;
+            // 실제로 작동하는 샘플 섬네일 이미지들 사용
+            const thumbnailUrls = [
+                'https://via.placeholder.com/400x225/ff6b6b/ffffff?text=키즈엠+컨텐츠',
+                'https://via.placeholder.com/400x225/4ecdc4/ffffff?text=교육+영상',
+                'https://via.placeholder.com/400x225/45b7d1/ffffff?text=학습+자료',
+                'https://via.placeholder.com/400x225/96ceb4/ffffff?text=놀이+활동',
+                'https://via.placeholder.com/400x225/feca57/ffffff?text=창의+활동',
+                'https://via.placeholder.com/400x225/ff9ff3/ffffff?text=음악+교육',
+                'https://via.placeholder.com/400x225/54a0ff/ffffff?text=과학+실험',
+                'https://via.placeholder.com/400x225/5f27cd/ffffff?text=언어+학습',
+                'https://via.placeholder.com/400x225/00d2d3/ffffff?text=수학+놀이',
+                'https://via.placeholder.com/400x225/ff9f43/ffffff?text=예술+활동'
+            ];
+            
+            // ID에 따라 다른 색상의 섬네일 반환
+            const colorIndex = (id - 1) % thumbnailUrls.length;
+            return thumbnailUrls[colorIndex];
         }
 
         function createKidsmCards() {
