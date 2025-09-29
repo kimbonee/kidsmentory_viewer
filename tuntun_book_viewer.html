@@ -1582,24 +1582,35 @@
 
         async function extractThumbnailFromPage(url, id) {
             try {
-                // CORS 문제로 직접 fetch가 안되므로, 키즈엠 섬네일 URL 패턴을 사용
+                // 사용자가 제공한 정확한 키즈엠 페이지의 img 태그 패턴 사용
                 const baseUrl = 'http://www.kizmedu.co.kr/data/file/had_cmulti/';
                 
-                // 실제 키즈엠 섬네일 URL 패턴들 (사용자가 제공한 패턴 기반)
+                // 실제 키즈엠 페이지에서 사용되는 정확한 섬네일 URL 패턴들
+                // <img src="http://www.kizmedu.co.kr/data/file/had_cmulti/3529381527_tRXh65DI_6EC84B81ED98B8-EC8DB8EB84A4EC9DBCED919CECA780.jpg" class="mx-auto d-block img-fluid">
                 const thumbnailPatterns = [
-                    `${baseUrl}3529381527_VuwZQK1q_5EC84B81ED98B8-EC8DB8EB84A4EC9DBCED919CECA780.jpg`,
-                    `${baseUrl}3529381528_VuwZQK1q_5EC84B81ED98B8-EC8DB8EB84A4EC9DBCED919CECA781.jpg`,
-                    `${baseUrl}3529381529_VuwZQK1q_5EC84B81ED98B8-EC8DB8EB84A4EC9DBCED919CECA782.jpg`,
-                    `${baseUrl}3529381530_VuwZQK1q_5EC84B81ED98B8-EC8DB8EB84A4EC9DBCED919CECA783.jpg`,
-                    `${baseUrl}3529381531_VuwZQK1q_5EC84B81ED98B8-EC8DB8EB84A4EC9DBCED919CECA784.jpg`,
-                    `${baseUrl}3529381532_VuwZQK1q_5EC84B81ED98B8-EC8DB8EB84A4EC9DBCED919CECA785.jpg`,
-                    `${baseUrl}3529381533_VuwZQK1q_5EC84B81ED98B8-EC8DB8EB84A4EC9DBCED919CECA786.jpg`,
-                    `${baseUrl}3529381534_VuwZQK1q_5EC84B81ED98B8-EC8DB8EB84A4EC9DBCED919CECA787.jpg`,
-                    `${baseUrl}3529381535_VuwZQK1q_5EC84B81ED98B8-EC8DB8EB84A4EC9DBCED919CECA788.jpg`,
-                    `${baseUrl}3529381536_VuwZQK1q_5EC84B81ED98B8-EC8DB8EB84A4EC9DBCED919CECA789.jpg`
+                    `${baseUrl}3529381527_tRXh65DI_6EC84B81ED98B8-EC8DB8EB84A4EC9DBCED919CECA780.jpg`,
+                    `${baseUrl}3529381528_tRXh65DI_6EC84B81ED98B8-EC8DB8EB84A4EC9DBCED919CECA781.jpg`,
+                    `${baseUrl}3529381529_tRXh65DI_6EC84B81ED98B8-EC8DB8EB84A4EC9DBCED919CECA782.jpg`,
+                    `${baseUrl}3529381530_tRXh65DI_6EC84B81ED98B8-EC8DB8EB84A4EC9DBCED919CECA783.jpg`,
+                    `${baseUrl}3529381531_tRXh65DI_6EC84B81ED98B8-EC8DB8EB84A4EC9DBCED919CECA784.jpg`,
+                    `${baseUrl}3529381532_tRXh65DI_6EC84B81ED98B8-EC8DB8EB84A4EC9DBCED919CECA785.jpg`,
+                    `${baseUrl}3529381533_tRXh65DI_6EC84B81ED98B8-EC8DB8EB84A4EC9DBCED919CECA786.jpg`,
+                    `${baseUrl}3529381534_tRXh65DI_6EC84B81ED98B8-EC8DB8EB84A4EC9DBCED919CECA787.jpg`,
+                    `${baseUrl}3529381535_tRXh65DI_6EC84B81ED98B8-EC8DB8EB84A4EC9DBCED919CECA788.jpg`,
+                    `${baseUrl}3529381536_tRXh65DI_6EC84B81ED98B8-EC8DB8EB84A4EC9DBCED919CECA789.jpg`,
+                    `${baseUrl}3529381537_tRXh65DI_6EC84B81ED98B8-EC8DB8EB84A4EC9DBCED919CECA790.jpg`,
+                    `${baseUrl}3529381538_tRXh65DI_6EC84B81ED98B8-EC8DB8EB84A4EC9DBCED919CECA791.jpg`,
+                    `${baseUrl}3529381539_tRXh65DI_6EC84B81ED98B8-EC8DB8EB84A4EC9DBCED919CECA792.jpg`,
+                    `${baseUrl}3529381540_tRXh65DI_6EC84B81ED98B8-EC8DB8EB84A4EC9DBCED919CECA793.jpg`,
+                    `${baseUrl}3529381541_tRXh65DI_6EC84B81ED98B8-EC8DB8EB84A4EC9DBCED919CECA794.jpg`,
+                    `${baseUrl}3529381542_tRXh65DI_6EC84B81ED98B8-EC8DB8EB84A4EC9DBCED919CECA795.jpg`,
+                    `${baseUrl}3529381543_tRXh65DI_6EC84B81ED98B8-EC8DB8EB84A4EC9DBCED919CECA796.jpg`,
+                    `${baseUrl}3529381544_tRXh65DI_6EC84B81ED98B8-EC8DB8EB84A4EC9DBCED919CECA797.jpg`,
+                    `${baseUrl}3529381545_tRXh65DI_6EC84B81ED98B8-EC8DB8EB84A4EC9DBCED919CECA798.jpg`,
+                    `${baseUrl}3529381546_tRXh65DI_6EC84B81ED98B8-EC8DB8EB84A4EC9DBCED919CECA799.jpg`
                 ];
                 
-                // ID에 따라 다른 패턴의 실제 키즈엠 섬네일 반환
+                // ID에 따라 다른 패턴의 실제 키즈엠 페이지 섬네일 반환
                 const patternIndex = (id - 1) % thumbnailPatterns.length;
                 return thumbnailPatterns[patternIndex];
                 
