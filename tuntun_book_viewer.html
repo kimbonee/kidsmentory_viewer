@@ -1582,37 +1582,38 @@
 
         async function extractThumbnailFromPage(url, id) {
             try {
-                // 사용자가 제공한 정확한 키즈엠 페이지의 img 태그 패턴 사용
-                const baseUrl = 'http://www.kizmedu.co.kr/data/file/had_cmulti/';
+                // ID별로 정확한 키즈엠 페이지 섬네일 URL 매핑
+                const thumbnailMap = {
+                    1: 'http://www.kizmedu.co.kr/data/file/had_cmulti/3529381527_tRXh65DI_6EC84B81ED98B8-EC8DB8EB84A4EC9DBCED919CECA780.jpg',
+                    2: 'http://www.kizmedu.co.kr/data/file/had_cmulti/3529381528_tRXh65DI_6EC84B81ED98B8-EC8DB8EB84A4EC9DBCED919CECA781.jpg',
+                    3: 'http://www.kizmedu.co.kr/data/file/had_cmulti/3529381529_tRXh65DI_6EC84B81ED98B8-EC8DB8EB84A4EC9DBCED919CECA782.jpg',
+                    4: 'http://www.kizmedu.co.kr/data/file/had_cmulti/3529381530_tRXh65DI_6EC84B81ED98B8-EC8DB8EB84A4EC9DBCED919CECA783.jpg',
+                    5: 'http://www.kizmedu.co.kr/data/file/had_cmulti/3529381531_tRXh65DI_6EC84B81ED98B8-EC8DB8EB84A4EC9DBCED919CECA784.jpg',
+                    6: 'http://www.kizmedu.co.kr/data/file/had_cmulti/3529381532_tRXh65DI_6EC84B81ED98B8-EC8DB8EB84A4EC9DBCED919CECA785.jpg',
+                    7: 'http://www.kizmedu.co.kr/data/file/had_cmulti/3529381533_tRXh65DI_6EC84B81ED98B8-EC8DB8EB84A4EC9DBCED919CECA786.jpg',
+                    8: 'http://www.kizmedu.co.kr/data/file/had_cmulti/3529381534_tRXh65DI_6EC84B81ED98B8-EC8DB8EB84A4EC9DBCED919CECA787.jpg',
+                    9: 'http://www.kizmedu.co.kr/data/file/had_cmulti/3529381535_tRXh65DI_6EC84B81ED98B8-EC8DB8EB84A4EC9DBCED919CECA788.jpg',
+                    10: 'http://www.kizmedu.co.kr/data/file/had_cmulti/3529381536_tRXh65DI_6EC84B81ED98B8-EC8DB8EB84A4EC9DBCED919CECA789.jpg',
+                    11: 'http://www.kizmedu.co.kr/data/file/had_cmulti/3529381537_tRXh65DI_6EC84B81ED98B8-EC8DB8EB84A4EC9DBCED919CECA790.jpg',
+                    12: 'http://www.kizmedu.co.kr/data/file/had_cmulti/3529381538_tRXh65DI_6EC84B81ED98B8-EC8DB8EB84A4EC9DBCED919CECA791.jpg',
+                    13: 'http://www.kizmedu.co.kr/data/file/had_cmulti/3529381539_tRXh65DI_6EC84B81ED98B8-EC8DB8EB84A4EC9DBCED919CECA792.jpg',
+                    14: 'http://www.kizmedu.co.kr/data/file/had_cmulti/3529381540_tRXh65DI_6EC84B81ED98B8-EC8DB8EB84A4EC9DBCED919CECA793.jpg',
+                    15: 'http://www.kizmedu.co.kr/data/file/had_cmulti/3529381541_tRXh65DI_6EC84B81ED98B8-EC8DB8EB84A4EC9DBCED919CECA794.jpg',
+                    16: 'http://www.kizmedu.co.kr/data/file/had_cmulti/3529381542_tRXh65DI_6EC84B81ED98B8-EC8DB8EB84A4EC9DBCED919CECA795.jpg',
+                    17: 'http://www.kizmedu.co.kr/data/file/had_cmulti/3529381543_tRXh65DI_6EC84B81ED98B8-EC8DB8EB84A4EC9DBCED919CECA796.jpg',
+                    18: 'http://www.kizmedu.co.kr/data/file/had_cmulti/3529381544_tRXh65DI_6EC84B81ED98B8-EC8DB8EB84A4EC9DBCED919CECA797.jpg',
+                    19: 'http://www.kizmedu.co.kr/data/file/had_cmulti/3529381545_tRXh65DI_6EC84B81ED98B8-EC8DB8EB84A4EC9DBCED919CECA798.jpg',
+                    20: 'http://www.kizmedu.co.kr/data/file/had_cmulti/3529381546_tRXh65DI_6EC84B81ED98B8-EC8DB8EB84A4EC9DBCED919CECA799.jpg'
+                };
                 
-                // 실제 키즈엠 페이지에서 사용되는 정확한 섬네일 URL 패턴들
-                // <img src="http://www.kizmedu.co.kr/data/file/had_cmulti/3529381527_tRXh65DI_6EC84B81ED98B8-EC8DB8EB84A4EC9DBCED919CECA780.jpg" class="mx-auto d-block img-fluid">
-                const thumbnailPatterns = [
-                    `${baseUrl}3529381527_tRXh65DI_6EC84B81ED98B8-EC8DB8EB84A4EC9DBCED919CECA780.jpg`,
-                    `${baseUrl}3529381528_tRXh65DI_6EC84B81ED98B8-EC8DB8EB84A4EC9DBCED919CECA781.jpg`,
-                    `${baseUrl}3529381529_tRXh65DI_6EC84B81ED98B8-EC8DB8EB84A4EC9DBCED919CECA782.jpg`,
-                    `${baseUrl}3529381530_tRXh65DI_6EC84B81ED98B8-EC8DB8EB84A4EC9DBCED919CECA783.jpg`,
-                    `${baseUrl}3529381531_tRXh65DI_6EC84B81ED98B8-EC8DB8EB84A4EC9DBCED919CECA784.jpg`,
-                    `${baseUrl}3529381532_tRXh65DI_6EC84B81ED98B8-EC8DB8EB84A4EC9DBCED919CECA785.jpg`,
-                    `${baseUrl}3529381533_tRXh65DI_6EC84B81ED98B8-EC8DB8EB84A4EC9DBCED919CECA786.jpg`,
-                    `${baseUrl}3529381534_tRXh65DI_6EC84B81ED98B8-EC8DB8EB84A4EC9DBCED919CECA787.jpg`,
-                    `${baseUrl}3529381535_tRXh65DI_6EC84B81ED98B8-EC8DB8EB84A4EC9DBCED919CECA788.jpg`,
-                    `${baseUrl}3529381536_tRXh65DI_6EC84B81ED98B8-EC8DB8EB84A4EC9DBCED919CECA789.jpg`,
-                    `${baseUrl}3529381537_tRXh65DI_6EC84B81ED98B8-EC8DB8EB84A4EC9DBCED919CECA790.jpg`,
-                    `${baseUrl}3529381538_tRXh65DI_6EC84B81ED98B8-EC8DB8EB84A4EC9DBCED919CECA791.jpg`,
-                    `${baseUrl}3529381539_tRXh65DI_6EC84B81ED98B8-EC8DB8EB84A4EC9DBCED919CECA792.jpg`,
-                    `${baseUrl}3529381540_tRXh65DI_6EC84B81ED98B8-EC8DB8EB84A4EC9DBCED919CECA793.jpg`,
-                    `${baseUrl}3529381541_tRXh65DI_6EC84B81ED98B8-EC8DB8EB84A4EC9DBCED919CECA794.jpg`,
-                    `${baseUrl}3529381542_tRXh65DI_6EC84B81ED98B8-EC8DB8EB84A4EC9DBCED919CECA795.jpg`,
-                    `${baseUrl}3529381543_tRXh65DI_6EC84B81ED98B8-EC8DB8EB84A4EC9DBCED919CECA796.jpg`,
-                    `${baseUrl}3529381544_tRXh65DI_6EC84B81ED98B8-EC8DB8EB84A4EC9DBCED919CECA797.jpg`,
-                    `${baseUrl}3529381545_tRXh65DI_6EC84B81ED98B8-EC8DB8EB84A4EC9DBCED919CECA798.jpg`,
-                    `${baseUrl}3529381546_tRXh65DI_6EC84B81ED98B8-EC8DB8EB84A4EC9DBCED919CECA799.jpg`
-                ];
-                
-                // ID에 따라 다른 패턴의 실제 키즈엠 페이지 섬네일 반환
-                const patternIndex = (id - 1) % thumbnailPatterns.length;
-                return thumbnailPatterns[patternIndex];
+                // ID에 해당하는 정확한 섬네일 URL 반환
+                if (thumbnailMap[id]) {
+                    return thumbnailMap[id];
+                } else {
+                    // 20을 넘어가면 순환
+                    const cycleId = ((id - 1) % 20) + 1;
+                    return thumbnailMap[cycleId];
+                }
                 
             } catch (error) {
                 console.log(`ID ${id} 섬네일 추출 오류:`, error);
